@@ -1910,6 +1910,15 @@ setInterval(()=>{dessineVerbes();dessineFleches()},250);setTimeout(ajuste,50);se
  for(const t of ['click','mousemove','contextmenu','dblclick'])cv.addEventListener(t,e=>{if(ON&&e.isTrusted&&performance.now()-dernierToucher<800){e.stopImmediatePropagation();e.preventDefault()}},true);
  addEventListener('resize',()=>setTimeout(place,80));document.addEventListener('fullscreenchange',()=>setTimeout(place,80));
  setInterval(()=>{if(ON)place()},500);
+ // glisser le doigt sur la barre du bas déplace aussi le curseur ; un simple tap sur un bouton reste un tap direct
+ {const bas=document.getElementById('bas');if(bas){bas.style.touchAction='none';let g2=null,bloque=0;
+  bas.addEventListener('pointerdown',e=>{if(!ON||e.pointerType==='mouse')return;g2={id:e.pointerId,x:e.clientX,y:e.clientY,dist:0,actif:false}},true);
+  bas.addEventListener('pointermove',e=>{if(!g2||e.pointerId!==g2.id)return;const dx=e.clientX-g2.x,dy=e.clientY-g2.y;g2.x=e.clientX;g2.y=e.clientY;g2.dist+=Math.hypot(dx,dy);
+   if(!g2.actif&&g2.dist>10){g2.actif=true;try{bas.setPointerCapture(e.pointerId)}catch(_){}}
+   if(g2.actif){e.preventDefault();px+=dx*1.4;py+=dy*1.4;place();bouge()}},true);
+  const fin2=e=>{if(!g2||e.pointerId!==g2.id)return;if(g2.actif){bloque=performance.now();e.preventDefault()}g2=null};
+  bas.addEventListener('pointerup',fin2,true);bas.addEventListener('pointercancel',fin2,true);
+  bas.addEventListener('click',e=>{if(e.isTrusted&&performance.now()-bloque<500){e.stopImmediatePropagation();e.preventDefault()}},true)}}
  // bouton dans la barre du bas
  const o=document.getElementById('outils'),bt=document.createElement('button');bt.id='curseurBt';bt.type='button';
  const maj=()=>{if(typeof inter==='function')inter(bt,'Curseur',ON);else bt.textContent='Curseur : '+(ON?'on':'off')};
