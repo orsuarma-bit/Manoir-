@@ -1866,4 +1866,40 @@ document.addEventListener('fullscreenchange',()=>setTimeout(ajuste,60));
 setInterval(()=>{dessineVerbes();dessineFleches()},250);setTimeout(ajuste,50);setTimeout(ajuste,600);
 
 {const t=document.getElementById('versTitre'),r=document.getElementById('reset');const f=()=>{const c=getComputedStyle(r);t.style.font=c.font};f();addEventListener('resize',f)}
+
+// ---------- curseur tactile façon ScummVM (pavé tactile) : on glisse le doigt pour déplacer le curseur, on tape pour cliquer, tape à deux doigts = clic droit
+{const tactile=matchMedia('(pointer: coarse)').matches||('ontouchstart' in window);
+ let ON=tactile;try{const v=localStorage.getItem('curseur');if(v!==null)ON=v==='1'}catch(e){}
+ const el=document.createElement('div');el.id='curseurT';el.setAttribute('aria-hidden','true');
+ el.innerHTML='<svg width="26" height="26" viewBox="0 0 13 13" shape-rendering="crispEdges"><g fill="#000"><rect x="5" y="0" width="3" height="5"/><rect x="5" y="8" width="3" height="5"/><rect x="0" y="5" width="5" height="3"/><rect x="8" y="5" width="5" height="3"/></g><g fill="#fff"><rect x="6" y="1" width="1" height="3"/><rect x="6" y="9" width="1" height="3"/><rect x="1" y="6" width="3" height="1"/><rect x="9" y="6" width="3" height="1"/></g><rect x="6" y="6" width="1" height="1" fill="#ffe14d"/></svg>';
+ el.style.cssText='position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;pointer-events:none;z-index:30;display:none;image-rendering:pixelated';
+ document.body.appendChild(el);
+ let cx=W/2,cy=H/2;
+ const versClient=(x,y)=>{const r=cv.getBoundingClientRect();if(document.documentElement.classList.contains('tourne'))return [r.right-y*r.width/H,r.top+x*r.height/W];return [r.left+x*r.width/W,r.top+y*r.height/H]};
+ const place=()=>{if(!ON){el.style.display='none';return}const [x,y]=versClient(cx,cy);el.style.display='block';el.style.transform='translate('+x+'px,'+y+'px)'};
+ const envoie=(type,extra)=>{const [x,y]=versClient(cx,cy);cv.dispatchEvent(new MouseEvent(type,Object.assign({clientX:x,clientY:y,bubbles:true,cancelable:true},extra||{})))};
+ const doigts=new Map();let geste=null,dernierToucher=0;
+ cv.style.touchAction='none';
+ cv.addEventListener('pointerdown',e=>{if(!ON||e.pointerType==='mouse'||(typeof ED!=='undefined'&&ED.on))return;e.preventDefault();e.stopImmediatePropagation();
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}doigts.set(e.pointerId,e);
+  if(!geste)geste={t:performance.now(),dist:0,max:1,id:e.pointerId};else geste.max=Math.max(geste.max,doigts.size)},true);
+ cv.addEventListener('pointermove',e=>{if(!ON||e.pointerType==='mouse'||!geste)return;e.preventDefault();e.stopImmediatePropagation();
+  const avant=doigts.get(e.pointerId);if(!avant)return;doigts.set(e.pointerId,e);if(e.pointerId!==geste.id)return;
+  const a=pos(avant),b=pos(e),k=1.4;cx=Math.max(0,Math.min(W-1,cx+(b[0]-a[0])*k));cy=Math.max(0,Math.min(H-1,cy+(b[1]-a[1])*k));
+  geste.dist+=Math.hypot(e.clientX-avant.clientX,e.clientY-avant.clientY);place();envoie('mousemove')},true);
+ const fin=e=>{if(!ON||e.pointerType==='mouse'||!geste)return;e.preventDefault();e.stopImmediatePropagation();doigts.delete(e.pointerId);dernierToucher=performance.now();
+  if(doigts.size)return;const g=geste;geste=null;
+  if(e.type==='pointercancel'||g.dist>12||performance.now()-g.t>600)return;
+  if(g.max>=2)envoie('contextmenu');else envoie('click')};
+ cv.addEventListener('pointerup',fin,true);cv.addEventListener('pointercancel',fin,true);
+ // on ignore le « vrai » clic que le navigateur envoie après un toucher : seul le curseur clique
+ for(const t of ['click','mousemove','contextmenu','dblclick'])cv.addEventListener(t,e=>{if(ON&&e.isTrusted&&performance.now()-dernierToucher<800){e.stopImmediatePropagation();e.preventDefault()}},true);
+ addEventListener('resize',()=>setTimeout(place,80));document.addEventListener('fullscreenchange',()=>setTimeout(place,80));
+ setInterval(()=>{if(ON)place()},500);
+ // bouton dans la barre du bas
+ const o=document.getElementById('outils'),bt=document.createElement('button');bt.id='curseurBt';bt.type='button';
+ const maj=()=>{if(typeof inter==='function')inter(bt,'Curseur',ON);else bt.textContent='Curseur : '+(ON?'on':'off')};
+ bt.onclick=()=>{ON=!ON;try{localStorage.setItem('curseur',ON?'1':'0')}catch(e){}maj();place()};
+ if(o){const r=document.getElementById('reset');o.insertBefore(bt,r||null)}maj();if(!tactile)bt.hidden=true;
+ setTimeout(place,300)}
 </script>
