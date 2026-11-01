@@ -959,7 +959,7 @@ async function allerSalle(dest){const de=S.salle,z=Zs().find(z=>['porteSalon','s
  const c=SALLES[dest].coin;let j=0;S.p.forEach((q,i)=>{const [x,y]=i===S.actif?arr:c[j++];q.x=q.tx=x;q.y=q.ty=y;q.dir=x<160?1:-1;q.marche=false;q.vue='P'});placerChien();
  S.trans=0;S.vite=0;FD.cible=0;tourner();majPhrase();await pause(200);
  if(dest==='salon'&&!S.vuSalon){S.vuSalon=true;await dire(3,'Le salon... Il fait chaud, ici.');await dire(0,'C\'est ce poisson qui chante faux ?');await dire(1,'On cherche Sam. Et on ne touche à rien de bizarre.')}
- if(dest==='cave'&&!S.vuCave){S.vuCave=true;await dire(1,'Il fait noir comme dans un four !');await dire(0,'Heureusement qu\'il y a ma lampe. Restez derrière moi.');await dire(2,'Euh... vous avez vu les deux yeux, là-haut ?!')}}
+ if(dest==='cave'&&!S.vuCave){S.vuCave=true;if(!S.fusibleOK)S.fusibleVu=true;await dire(1,'Il fait noir comme dans un four !');await dire(0,'Heureusement qu\'il y a ma lampe. Restez derrière moi.');await dire(2,'Euh... vous avez vu les deux yeux, là-haut ?!')}}
 // ---------- téléphone : il sonne de temps en temps, il faut décrocher avant qu'il s'arrête
 async function decrocher(){
  const T=S.tel;
