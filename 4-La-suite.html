@@ -176,7 +176,7 @@ html.plein #outils button{font-size:13px!important;color:#ffb3c0!important;backg
 #optC.liste .orow{display:none}#optC.liste #testListe{max-height:calc(118*var(--px))}/* liste ouverte */#testListe[hidden]{display:none}#testListe button{background:rgba(40,8,18,.8);border:1px solid #7a4a20;color:#f3d9a4;font:inherit;font-size:calc(4.6*var(--px));text-align:left;padding:calc(.6*var(--px)) calc(2*var(--px));cursor:pointer}#testListe button:hover{background:#5a1a22}
 #outils #versTitre{color:var(--dim);text-decoration:none;align-self:center}#outils #versTitre:hover{color:var(--verb-hi)}html.pseudo #outils #versTitre{display:inline-block;font:13px var(--font,monospace)!important;color:#ffb3c0;background:rgba(0,0,0,.55);padding:1px 6px;border-radius:4px}
 </style>
-<style id="barreV2">
+<style id="engrSousAller">#verbes #panneauBt.sousAller{order:0!important;margin:0!important;justify-self:center;align-self:center;position:static!important}#verbes #panneauBt.sousAller img.engr{height:calc(13*var(--px))!important}</style><style id="barreV2">
 :root{--txt:1}
 #panneauBt img.engr{height:calc(15*var(--px))!important;width:auto;image-rendering:pixelated;filter:drop-shadow(0 0 calc(1*var(--px)) rgba(0,0,0,.6))}
 #panneauBt:hover img.engr{filter:brightness(1.3)}
@@ -1960,4 +1960,8 @@ setInterval(()=>{dessineVerbes();dessineFleches()},250);setTimeout(ajuste,50);se
  const lb=document.createElement('span');lb.className='lbl';lb.textContent='Taille du texte';const ch=document.createElement('span');ch.className='choix';
  const bs=T.map(([n],i)=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.setAttribute('aria-label','Texte '+n.toLowerCase());b.onclick=e=>{e.stopPropagation();t=i;try{localStorage.setItem('texte',String(i))}catch(_){}pose()};ch.append(b);return b});
  row.append(lb,ch);if(C){const o=C.querySelector('.otest');C.insertBefore(row,o||null)}pose()}
+
+// engrenage sous « Aller »
+{const pb=document.getElementById('panneauBt'),ve=document.getElementById('verbes'),al=document.getElementById('v-Aller');
+ if(pb&&ve&&al){const c=getComputedStyle(al).gridColumnStart;ve.append(pb);pb.classList.add('sousAller');pb.style.gridColumn=(c&&c!=='auto')?c:'5';pb.style.gridRow='2 / span 2'}}
 </script>
