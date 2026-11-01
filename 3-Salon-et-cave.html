@@ -1384,10 +1384,24 @@ setInterval(()=>{dessineVerbes();dessineFleches()},250);setTimeout(ajuste,50);se
  el.innerHTML='<svg width="26" height="26" viewBox="0 0 13 13" shape-rendering="crispEdges"><g fill="#000"><rect x="5" y="0" width="3" height="5"/><rect x="5" y="8" width="3" height="5"/><rect x="0" y="5" width="5" height="3"/><rect x="8" y="5" width="5" height="3"/></g><g fill="#fff"><rect x="6" y="1" width="1" height="3"/><rect x="6" y="9" width="1" height="3"/><rect x="1" y="6" width="3" height="1"/><rect x="9" y="6" width="3" height="1"/></g><rect x="6" y="6" width="1" height="1" fill="#ffe14d"/></svg>';
  el.style.cssText='position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;pointer-events:none;z-index:30;display:none;image-rendering:pixelated';
  document.body.appendChild(el);
- let cx=W/2,cy=H/2;
+ // le curseur vit en coordonnées écran : il peut sortir de l'image et aller sur les verbes, l'inventaire et le menu
+ const jeu=document.getElementById('jeu')||cv.parentElement;
  const versClient=(x,y)=>{const r=cv.getBoundingClientRect();if(document.documentElement.classList.contains('tourne'))return [r.right-y*r.width/H,r.top+x*r.height/W];return [r.left+x*r.width/W,r.top+y*r.height/H]};
- const place=()=>{if(!ON){el.style.display='none';return}const [x,y]=versClient(cx,cy);el.style.display='block';el.style.transform='translate('+x+'px,'+y+'px)'};
- const envoie=(type,extra)=>{const [x,y]=versClient(cx,cy);cv.dispatchEvent(new MouseEvent(type,Object.assign({clientX:x,clientY:y,bubbles:true,cancelable:true},extra||{})))};
+ let px,py;{const c=versClient(W/2,H/2);px=c[0];py=c[1]}
+ const borne=()=>{const r=jeu.getBoundingClientRect(),vw=document.documentElement.clientWidth||innerWidth,vh=document.documentElement.clientHeight||innerHeight;
+  px=Math.max(Math.max(r.left,0)+1,Math.min(Math.min(r.right,vw)-2,px));py=Math.max(Math.max(r.top,0)+1,Math.min(Math.min(r.bottom,vh)-2,py))};
+ const place=()=>{if(!ON){el.style.display='none';return}borne();el.style.display='block';el.style.transform='translate('+px+'px,'+py+'px)'};
+ const sous=()=>{const t=document.elementFromPoint(px,py);return t&&jeu.contains(t)?t:null};
+ const surImage=t=>t===cv;
+ let survol=null;
+ const opts=extra=>Object.assign({clientX:px,clientY:py,bubbles:true,cancelable:true,view:window},extra||{});
+ const bouge=()=>{const t=sous();const cible=t&&!surImage(t)?(t.closest('button,[onclick],a')||t):t;
+  if(cible!==survol){if(survol){survol.dispatchEvent(new MouseEvent('mouseout',opts()));survol.dispatchEvent(new MouseEvent('mouseleave',opts({bubbles:false})))}
+   survol=cible;if(survol){survol.dispatchEvent(new MouseEvent('mouseover',opts()));survol.dispatchEvent(new MouseEvent('mouseenter',opts({bubbles:false})))}}
+  if(survol)survol.dispatchEvent(new MouseEvent('mousemove',opts()))};
+ const envoie=type=>{const t=sous();if(!t)return;const cible=surImage(t)?cv:(t.closest('button,[onclick],a')||t);
+  if(type==='click'&&!surImage(t)){if(cible.disabled)return;cible.dispatchEvent(new MouseEvent('mousedown',opts()));cible.dispatchEvent(new MouseEvent('mouseup',opts()));cible.click();return}
+  cible.dispatchEvent(new MouseEvent(type,opts()))};
  const doigts=new Map();let geste=null,dernierToucher=0;
  cv.style.touchAction='none';
  cv.addEventListener('pointerdown',e=>{if(!ON||e.pointerType==='mouse'||(typeof ED!=='undefined'&&ED.on))return;e.preventDefault();e.stopImmediatePropagation();
@@ -1395,8 +1409,8 @@ setInterval(()=>{dessineVerbes();dessineFleches()},250);setTimeout(ajuste,50);se
   if(!geste)geste={t:performance.now(),dist:0,max:1,id:e.pointerId};else geste.max=Math.max(geste.max,doigts.size)},true);
  cv.addEventListener('pointermove',e=>{if(!ON||e.pointerType==='mouse'||!geste)return;e.preventDefault();e.stopImmediatePropagation();
   const avant=doigts.get(e.pointerId);if(!avant)return;doigts.set(e.pointerId,e);if(e.pointerId!==geste.id)return;
-  const a=pos(avant),b=pos(e),k=1.4;cx=Math.max(0,Math.min(W-1,cx+(b[0]-a[0])*k));cy=Math.max(0,Math.min(H-1,cy+(b[1]-a[1])*k));
-  geste.dist+=Math.hypot(e.clientX-avant.clientX,e.clientY-avant.clientY);place();envoie('mousemove')},true);
+  const k=1.4;px+=(e.clientX-avant.clientX)*k;py+=(e.clientY-avant.clientY)*k;
+  geste.dist+=Math.hypot(e.clientX-avant.clientX,e.clientY-avant.clientY);place();bouge()},true);
  const fin=e=>{if(!ON||e.pointerType==='mouse'||!geste)return;e.preventDefault();e.stopImmediatePropagation();doigts.delete(e.pointerId);dernierToucher=performance.now();
   if(doigts.size)return;const g=geste;geste=null;
   if(e.type==='pointercancel'||g.dist>12||performance.now()-g.t>600)return;
