@@ -818,13 +818,13 @@ async function action(v,a,b){
 async function actionSalon(v,a,b,k,P){
  // la télé : sa prise a le même fusible que la cave
  if(S.fusibleVu&&!S.fusiblePris&&b&&b.id==='tele'&&a.t==='obj'){
-  if(a.id!=='tournevis')return parle(a.id==='walkman'?'Le clip du walkman se tord tout de suite. Le capot est vissé : il me faut un tournevis.':'Ça ne marchera pas. Le capot est tenu par quatre petites vis. Il me faut un tournevis.');
+  if(a.id!=='tournevis')return parle((a.id==='walkman'?'Le clip du walkman se tord tout de suite. Le capot est vissé.':'Ça ne marchera pas. Le capot est tenu par quatre petites vis.')+(aQui('tournevis')?' Avec le tournevis, ça devrait aller.':' Il me faut un tournevis. Il y avait un établi, en bas, à la cave...'));
   if(!S.teleDebr){await cinema([['tvdos1','Bzzzt !']]);return parle('Pas tant que c\'est branché. Je tiens à mes doigts.')}
   S.fusiblePris=true;await cinema([['tvdos4','Une vis, deux vis, trois vis, quatre... Le capot tombe.'],['tvdos5','Et voilà le fusible !']]);ajoute('fusible');return parle('Un fusible tout neuf. Merci le tournevis.')}
- if(k==='tele'){if(S.fusibleVu&&!S.fusiblePris&&(v==='Prendre'||v==='Ouvrir'||v==='Tirer'||v==='Utiliser')){
-   if(v==='Tirer'&&!S.teleDebr){S.teleDebr=true;S.teleOn=false;await cinema([['tvdos2','Je débranche la prise.']]);return parle('Débranchée. Plus d\'étincelles.')}
+ if(k==='tele'){if(S.fusibleVu&&!S.fusiblePris&&(v==='Prendre'||v==='Ouvrir'||v==='Tirer'||v==='Pousser'||v==='Utiliser')){
+   if((v==='Tirer'||v==='Pousser')&&!S.teleDebr){S.teleDebr=true;S.teleOn=false;await cinema([['tvdos2','Je débranche la prise.']]);return parle('Débranchée. Plus d\'étincelles.')}
    if(!S.teleDebr){await cinema([['tvdos1','Bzzzt ! Ça crépite près du capot !']]);return parle('Aïe ! Elle est encore branchée.')}
-   return parle('Le capot est tenu par quatre petites vis. Avec les ongles, impossible. Il me faut un tournevis.')}
+   return parle('Le capot est tenu par quatre petites vis. Avec les ongles, impossible.'+(aQui('tournevis')?' Avec le tournevis, ça devrait aller.':' Il me faut un tournevis. Il y avait un établi, en bas, à la cave...'))}
   if(v==='Prendre')return parle('Elle pèse trois tonnes.')}
  // le canapé : quelque chose sous les coussins
  if(k==='canape'&&(v==='Prendre'||v==='Ouvrir'||v==='Pousser'||v==='Tirer'||v==='Secouer')){if(S.sandwich)return parle('Plus rien, à part des miettes.');S.sandwich=true;ajoute('sandwich');return parle('Je fouille entre les coussins... Beurk ! Un sandwich au thon entamé. Encore tiède.')}
