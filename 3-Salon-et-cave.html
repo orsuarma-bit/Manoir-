@@ -656,7 +656,7 @@ const TEST_PAS=[['Prendre',TZ('parapluies')],['Ouvrir',TO('parapluie')],['Utilis
  ['Aller',TZ('escalierC')],['Aller',TZ('sortieHall')],['Regarder',TZ('horloge')],['Aller',TZ('porteSalon')],['Aller',TZ('bibli')],
  ['Ouvrir',TZ('caisseOutils')],['Utiliser',TO('cleMolette'),TZ('grille')],['Donner',TO('sandwich'),TZ('chat')],['Utiliser',TO('chat'),TZ('grille')]];
 const TEST_ETAPES=[['Perron : le début',0],['Perron : la grosse clé en fer est trouvée',6],['Hall : on vient d\'entrer',7],['Hall : la petite clé dorée est trouvée',8],
- ['Salon : on vient d\'entrer',9],['Salon : la clé en laiton est trouvée',12],['Salon : le globe est ouvert (anneaux à faire)',13],['Cave : on arrive dans le noir',14],
+ ['Salon : on vient d\'entrer',9],['Salon : la clé en laiton est trouvée',12],['Salon : clé en laiton en main, globe encore fermé',12,()=>{const i=S.p.findIndex(q=>q.id===aQui('cleLaiton'));if(i>=0){S.actif=i;const q=S.p[i];q.x=q.tx=214;q.y=q.ty=112;q.dir=1}}],['Salon : le globe est ouvert (anneaux à faire)',13],['Salon : anneaux réglés, levier à tirer',13,()=>{S.anneaux=[7,2,2,5];S.vuAnneaux=true}],['Cave : on arrive dans le noir',14],
  ['Cave : le fusible grillé est pris',17],['Salon : le fusible et le sandwich sont pris',24],['Cave : la lumière est revenue',27],['Hall : le code du cadenas est connu',31],
  ['Cave : la caisse à outils est ouverte',34],['Cave : la plaque d\'égout est ouverte',35],['Cave : MistyGris a mangé',36],['La fin',37]];
 async function testPas([v,a,b,qui]){
@@ -667,13 +667,14 @@ async function testPas([v,a,b,qui]){
  if(v==='Tirer'&&a.id==='globe'&&!S.globeOK){S.anneaux=[7,2,2,5];await executer(v,a,null);return gLevier()}
  return executer(v,a,b||null)}
 let TESTE=false;
-async function allerEtape(e){if(TESTE)return;TESTE=true;const [nom,n]=TEST_ETAPES[e];
+async function allerEtape(e){if(TESTE)return;TESTE=true;const [nom,n,apres]=TEST_ETAPES[e];
  const V=document.getElementById('testVoile'),st=window.setTimeout,attends=ms=>new Promise(r=>st(r,ms));
  document.getElementById('testTxt').textContent=nom;V.hidden=false;
  window.setTimeout=(f,ms,...r)=>st(f,(ms||0)/30,...r);
  const iv=setInterval(()=>{while(S.file.length||S.bulle){if(S.file.length)finBulle();else S.bulle=null}for(let k=0;k<12;k++)maj(50)},10);
  try{if(GL.ouvert)fermerGros();document.getElementById('reset').click();await attends(50);
   for(let i=0;i<n;i++){await testPas(TEST_PAS[i]);await attends(30);while(S.occupe||S.trans||S.file.length||GL.occupe)await attends(30)}
+  if(apres)apres();
  }catch(err){console.error('testeur',err)}
  finally{window.setTimeout=st;clearInterval(iv);if(S.file.length)finBulle();V.hidden=true;TESTE=false;tourner();majVerbes();majPersos();majInv();majPhrase()}}
 // ---------- la gargouille : on charge la baleine d'électricité statique sur le paillasson, jusqu'à trois fois
