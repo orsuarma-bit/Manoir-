@@ -365,7 +365,7 @@ async function allerChemin(){if(!invA().includes('lampeOK'))return parle(S.walkm
 function envoyerRat(){const P=act();return new Promise(res=>{S.rat={x:P.x+4,y:P.y,cible:[90,113],etat:'aller',t:0,res}})}
 // ---------- interface
 const elV=document.getElementById('verbes'),elO=document.getElementById('objets'),elP=document.getElementById('persos'),elPh=document.getElementById('phrase');
-VERBES.forEach(v=>{const b=document.createElement('button');b.className='verbe';b.textContent=v;b.id='v-'+v;b.onclick=()=>{S.verbe=v;S.sel=null;majVerbes();majPhrase()};elV.appendChild(b)});
+VERBES.forEach(v=>{const b=document.createElement('button');b.className='verbe';b.textContent=v;b.id='v-'+v;b.onclick=()=>{S.verbe=v;S.sel=null;if(S.occupe)S.verbeChoisi=true;majVerbes();majPhrase()};elV.appendChild(b)});
 PERSOS.forEach((p,i)=>{const b=document.createElement('button');b.replaceChildren(spr('f_'+p.id+'_n'));b.setAttribute('aria-label',p.nom);b.title=p.nom;b.id='p-'+p.id;b.onclick=()=>{if(S.occupe)return;S.actif=i;S.sel=null;majInv();majPersos()};document.getElementById('visages').appendChild(b)});
 function majVerbes(){VERBES.forEach(v=>document.getElementById('v-'+v).classList.toggle('actif',v===S.verbe));if(typeof dessineVerbes==='function')dessineVerbes();if(typeof majInv==='function'&&elO)majInv()}
 function majPersos(){PERSOS.forEach((p,i)=>{const b=document.getElementById('p-'+p.id),on=i===S.actif;b.classList.toggle('actif',on);b.firstChild.src=A['m_f_'+p.id+(on?'_a':'_n')]})}
@@ -380,7 +380,7 @@ document.getElementById('invH').onclick=()=>{S.invPg=(S.invPg||0)-1;majInv()};do
 function libelle(c){return c.t==='vzone'?(c.id==='sortir'?'sortir':ZV[S.vue].find(z=>z.id===c.id).nom):c.t==='obj'||c.t==='vobj'?OBJ[c.id]:c.t==='perso'?S.p[c.id].nom:c.t==='bete'?BETES[c.id].nom:(Z.find(z=>z.id===c.id)||{}).nom}
 function majPhrase(survol){let s=S.verbe;if(S.sel)s+=' '+libelle(S.sel)+(S.verbe==='Donner'?' à':' avec');if(survol)s+=' '+survol;elPh.textContent=s}
 async function clic(c,pt){
- if(S.occupe||S.fin)return;
+ if(S.occupe&&!S.fin&&S.verbeChoisi&&c.t==='obj'&&(S.verbe==='Utiliser'||S.verbe==='Donner')&&!S.sel){S.sel=c;return}if(S.occupe||S.fin)return;
  const v=S.verbe;
  if((v==='Utiliser'||v==='Donner')&&!S.sel){
   if(v==='Utiliser'&&c.t!=='obj'&&c.t!=='vobj'&&!(c.t==='bete'))return executer(v,c,null,pt);
@@ -401,7 +401,7 @@ async function executer(v,a,b,pt){
   if(v==='Aller'&&a.t!=='zone'&&a.t!=='bete'&&a.t!=='perso')return;
   if(v==='Aller'&&a.id!=='chemin'&&a.id!=='manoir')return;
   await action(v,a,b);
- } finally {S.occupe=false;if(!S.fin){S.verbe='Aller';majVerbes();majPhrase()}}
+ } finally {S.occupe=false;if(!S.fin){if(!S.verbeChoisi)S.verbe='Aller';S.verbeChoisi=false;majVerbes();majPhrase()}}
 }
 // ---------- souris sur la pièce
 function pos(e){const r=cv.getBoundingClientRect();
