@@ -1436,4 +1436,7 @@ setInterval(()=>{dessineVerbes();dessineFleches()},250);setTimeout(ajuste,50);se
  bt.onclick=()=>{ON=!ON;try{localStorage.setItem('curseur',ON?'1':'0')}catch(e){}maj();place()};
  if(o){const r=document.getElementById('reset');o.insertBefore(bt,r||null)}maj();if(!tactile)bt.hidden=true;
  setTimeout(place,300)}
+
+// MODE DEV : ouvert depuis l'écran titre avec #etape=N, on saute directement à cette étape du testeur
+{const m=/etape=(\d+)/.exec(location.hash);if(m&&typeof allerEtape==='function'){const n=+m[1];history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>{if(n<TEST_ETAPES.length)allerEtape(n)},700)}}
 </script>
