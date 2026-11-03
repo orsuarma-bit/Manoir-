@@ -198,6 +198,18 @@ html.plein #outils button{font-size:13px!important;color:#ffb3c0!important;backg
 #optC .otxt button:nth-child(1){font-size:calc(4.5*var(--px))}#optC .otxt button:nth-child(2){font-size:calc(5.5*var(--px))}#optC .otxt button:nth-child(3){font-size:calc(7*var(--px))}
 #optC .otxt button.on{background:#5a1a22;color:#ffe14d;box-shadow:inset 0 0 0 2px #ffe14d}
 #optC.liste .otxt{display:none}
+</style><style id="bullesBD">
+#bulle.bd{transform:none!important;background:#fffdf4;color:#1b1420!important;text-shadow:none!important;
+ font-size:calc(clamp(13px,2.1vw,32px) * var(--txt))!important;line-height:1.15;max-width:46%;
+ padding:.38em .7em .42em;border:3px solid #111;border-radius:1.1em;
+ box-shadow:inset 0 0 0 3px var(--bc,#fff),3px 4px 0 rgba(0,0,0,.45);font-weight:600;z-index:3;text-wrap:balance}
+#bulle.bd::before,#bulle.bd::after{content:'';position:absolute;left:var(--q,50%);width:0;height:0;border-style:solid;pointer-events:none}
+#bulle.bd::before{top:100%;margin-left:-11px;border-width:15px 11px 0 11px;border-color:#111 transparent transparent transparent}
+#bulle.bd::after{top:100%;margin-left:-7px;margin-top:-4px;border-width:12px 7px 0 7px;border-color:#fffdf4 transparent transparent transparent}
+#bulle.bd.bas::before{top:auto;bottom:100%;border-width:0 11px 15px 11px;border-color:transparent transparent #111 transparent}
+#bulle.bd.bas::after{top:auto;bottom:100%;margin-top:0;margin-bottom:-4px;border-width:0 7px 12px 7px;border-color:transparent transparent #fffdf4 transparent}
+#bulle.bd.voix{border-style:dashed;border-radius:.5em;background:#f2fdff}
+#bulle.bd.voix::before,#bulle.bd.voix::after,#bulle.bd.centre::before,#bulle.bd.centre::after{display:none}
 </style><div id="jeu">
   <div id="ecran"><canvas id="c" width="320" height="144"></canvas><div id="cine" hidden><img id="cineI" alt=""><p id="cineT"></p></div><div id="bulle" hidden></div><div id="testVoile" hidden><p>Mode testeur<br><small id="testTxt"></small></p></div><div id="gros" hidden><canvas id="grosC" width="1440" height="648"></canvas><p id="grosT"></p><button id="grosX" aria-label="Fermer">✕</button></div><div id="fin" hidden>Fin du cinquième tableau<small>Sam est vivant, quelque part sous le manoir... À suivre !</small><button id="rejouer" style="color:#5fd35a;text-align:center">Rejouer</button><a href="4-La-suite.html" style="color:#5fd35a;text-align:center;text-decoration:none;display:block">Tableau suivant ▶</a><a href="./" style="color:#ffe066;text-align:center;text-decoration:none;display:block">Écran titre</a></div></div>
   <div id="phrase">Aller</div>
@@ -1206,7 +1218,25 @@ function dessine(t){
  bulle();if(ED.on)edDessine()}
 function pluie(t){
  for(const k of COUCHES){g.strokeStyle=k.c;g.beginPath();for(const d of k.d){const y=(d[1]+t*k.vy)%160-8,x=((d[0]+t*k.vx)%380+380)%380-30;g.moveTo(x,y);g.lineTo(x-k.l*.3,y+k.l)}g.stroke()}}
+let BULLES_BD=true;try{BULLES_BD=localStorage.getItem('bulles')!=='0'}catch(e){}
 function bulle(){
+ const el=document.getElementById('bulle');
+ if(!S.bulle){el.hidden=true;return}
+ el.hidden=false;if(el.textContent!==S.bulle.txt)el.textContent=S.bulle.txt;
+ if(!BULLES_BD){el.className='';el.style.removeProperty('--bc');return bulleAncienne()}
+ const sw=el.parentNode.clientWidth,sh=el.parentNode.clientHeight,m=6,pointe=16;
+ if(S.bulle.i<0||S.vue){const hc=S.bulle.i<0;el.className=hc?'bd voix':'bd centre';el.style.removeProperty('color');el.style.setProperty('--bc',hc?(typeof VOIX!=='undefined'?VOIX.coul:'#9cf5ff'):S.p[S.bulle.i].coul);
+  const bw=el.offsetWidth;el.style.left=Math.round((sw-bw)/2)+'px';el.style.top=Math.round(sh*.08)+'px';return}
+ const p=S.p[S.bulle.i];el.style.removeProperty('color');el.style.setProperty('--bc',p.coul);
+ el.className='bd';const bw=el.offsetWidth,bh=el.offsetHeight;
+ const hx=p.x/W*sw,hy=(p.y-62*prof(p.y))/H*sh;
+ const x=Math.max(m,Math.min(sw-bw-m,hx-bw/2));
+ let y=hy-pointe-bh;if(y<m){y=hy+pointe+6;el.className='bd bas'}
+ y=Math.max(m,Math.min(sh-bh-m,y));
+ el.style.left=Math.round(x)+'px';el.style.top=Math.round(y)+'px';
+ el.style.setProperty('--q',Math.max(18,Math.min(bw-18,hx-x))+'px');
+}
+function bulleAncienne(){
  const el=document.getElementById('bulle');
  if(S.bulle){el.hidden=false;el.textContent=S.bulle.txt;
   if(S.bulle.i<0){el.style.color=VOIX.coul;el.style.left='50%';el.style.top='22%'}
@@ -1479,4 +1509,11 @@ Object.assign(A,{"gz0": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD
 // engrenage sous « Aller »
 {const pb=document.getElementById('panneauBt'),ve=document.getElementById('verbes'),al=document.getElementById('v-Aller');
  if(pb&&ve&&al){const c=getComputedStyle(al).gridColumnStart;ve.append(pb);pb.classList.add('sousAller');pb.style.gridColumn=(c&&c!=='auto')?c:'5';pb.style.gridRow='2 / span 2'}}
+
+// options : bulles de BD ou texte simple au-dessus des têtes (gardé sur cet appareil)
+{const C=document.getElementById('optC');if(C){const row=document.createElement('div');row.className='otxt obul';
+ const lb=document.createElement('span');lb.className='lbl';lb.textContent='Bulles';const ch=document.createElement('span');ch.className='choix';
+ const bs=[['BD',true],['Simple',false]].map(([n,v])=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.style.fontSize='calc(5.5*var(--px))';
+  b.onclick=e=>{e.stopPropagation();BULLES_BD=v;try{localStorage.setItem('bulles',v?'1':'0')}catch(_){}bs.forEach(x=>x.classList.toggle('on',x===b))};ch.append(b);return b});
+ bs[BULLES_BD?0:1].classList.add('on');row.append(lb,ch);const o=C.querySelector('.otest');C.insertBefore(row,o||null)}}
 </script>
