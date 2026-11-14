@@ -302,6 +302,7 @@ const SALLES={
   {id:'manometre',nom:'manomètre',r:[90,34,102,50],va:[96,110]},
   {id:'chaudiere',nom:'chaudière',r:[100,0,150,100],va:[124,112]},
   {id:'vanne',nom:'volant rouge',r:[150,58,160,72],va:[154,110]},
+  {id:'placardR',nom:'petite trappe',r:[148,73,166,79],va:[156,110]},
   {id:'charbon',nom:'tas de charbon',r:[150,80,168,100],va:[160,112]},
   {id:'pelle',nom:'pelle',r:[168,64,180,100],va:[172,112]},
   {id:'cuve',nom:'cuve',r:[170,14,200,64],va:[186,110]},
@@ -506,7 +507,7 @@ const LOOKS={salon:{
  boitier:()=>S.fusibleOK?'Le boîtier électrique. Le fusible de la télé tient bon.':S.boitierOuvert?'Des vieux fusibles en porcelaine. Celui du milieu a fondu.':'Un boîtier électrique, avec des manettes et des cadrans.',
  caisseOutils:()=>S.caisseOuverte?'La caisse à outils est ouverte.':'Une caisse à outils, fermée par un cadenas à trois chiffres.',
  lanterneC:'Une lanterne à pétrole. Vide. Évidemment.',
- etabli:()=>S.tournevis?'Un établi plein de taches de graisse.':'Un établi plein de taches de graisse. Un tournevis traîne dessus.',
+ etabli:'Un établi plein de taches de graisse.',placardR:()=>S.tournevis?'La petite trappe derrière les tuyaux. Vide.':'Une petite trappe en fer, cachée derrière les tuyaux, sous le volant rouge.',
  escalierC:'L\'escalier qui remonte au salon.',
  interrupteur:'Un vieil interrupteur rotatif, en laiton.',
  grille:()=>S.grille?'La plaque est enlevée. Un tunnel minuscule descend dans le noir.':'Une plaque d\'égout ronde, en fonte, vissée par quatre gros boulons. Un courant d\'air monte par les trous... Ça sent la pizza ?!',
@@ -674,7 +675,7 @@ const TEST_PAS=[['Prendre',TZ('parapluies')],['Ouvrir',TO('parapluie')],['Utilis
  ['Utiliser',TO('baleine'),TZ('gargouille')],['Ouvrir',TZ('porte')],
  ['Utiliser',TO('mouchoir'),TZ('aspirateur')],['Ouvrir',TZ('porteSalon')],
  ['Prendre',TZ('cheminee')],['Pousser',TZ('poisson')],['Utiliser',TO('pince'),TZ('poisson')],['Utiliser',TO('cleLaiton'),TZ('globe')],['Tirer',TZ('globe')],
- ['Regarder',TZ('yeux')],['Ouvrir',TZ('boitier')],['Prendre',TZ('boitier')],['Allumer',TZ('interrupteur')],['Prendre',TZ('etabli'),null,'lampeOK'],['Aller',TZ('escalierC')],
+ ['Regarder',TZ('yeux')],['Ouvrir',TZ('boitier')],['Prendre',TZ('boitier')],['Allumer',TZ('interrupteur')],['Ouvrir',TZ('placardR'),null,'lampeOK'],['Aller',TZ('escalierC')],
  ['Regarder',TZ('tele')],['Tirer',TZ('tele')],['Utiliser',TO('tournevis'),TZ('tele')],['Prendre',TZ('canape'),null,'lampeOK'],['Aller',TZ('bibli')],['Utiliser',TO('fusible'),TZ('boitier'),'lampeOK'],['Allumer',TZ('interrupteur')],['Ouvrir',TZ('caisseOutils')],
  ['Aller',TZ('escalierC')],['Aller',TZ('sortieHall')],['Regarder',TZ('horloge')],['Aller',TZ('porteSalon')],['Aller',TZ('bibli')],
  ['Ouvrir',TZ('caisseOutils')],['Utiliser',TO('cleMolette'),TZ('grille')],['Donner',TO('sandwich'),TZ('chat')],['Utiliser',TO('chat'),TZ('grille')]];
@@ -911,8 +912,10 @@ async function actionCave(v,a,b,k,P){
   if(S.code){S.caisseOuverte=true;ajoute('cleMolette');await parle('3... 4... 7... CLAC ! Le cadenas s\'ouvre !');return parle('Dedans, il y a une grosse clé à molette.')}
   S.vuCadenas=true;return parle('Un cadenas à trois chiffres. Gravé sur le couvercle : « L\'HEURE OÙ TOUT S\'EST ARRÊTÉ ».')}
  if(k==='caisseOutils'&&v==='Secouer')return parle('Ça cliquette. Il y a un outil lourd, dedans.');
- // le tournevis, sur l'établi
- if(S.salle==='cave'&&k==='etabli'&&(v==='Prendre'||v==='Utiliser'||v==='Ouvrir')){if(S.tournevis)return parle('Il n\'y a plus que de la graisse.');S.tournevis=true;ajoute('tournevis');return parle('Un tournevis plat, avec un manche rouge. Ça peut servir.')}
+ // le tournevis, dans la petite trappe sous le volant rouge
+ if(S.salle==='cave'&&k==='etabli'&&(v==='Prendre'||v==='Utiliser'||v==='Ouvrir'))return parle('Rien d\'utile. Juste de la graisse.');
+ if(S.salle==='cave'&&k==='placardR'&&(v==='Ouvrir'||v==='Prendre'||v==='Utiliser'||v==='Tirer')){if(S.tournevis)return parle('Il n\'y a plus rien dedans.');S.tournevis=true;ajoute('tournevis');return parle('Je tire la petite trappe... Ça grince. Dedans, un tournevis plat avec un manche rouge !')}
+ if(S.salle==='cave'&&k==='placardR'&&v==='Fermer')return parle('Je la laisse comme ça.');
  // la plaque d'égout
  if(k==='grille'&&(v==='Ouvrir'||v==='Tirer'||v==='Prendre'||v==='Pousser'))return parle(S.grille?'Elle est déjà ouverte.':'Elle est vissée. Quatre gros boulons rouillés. Il faudrait un outil.');
  if(v==='Utiliser'&&has('grille')&&b){
@@ -1516,4 +1519,6 @@ Object.assign(A,{"gz0": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD
 // engrenage sous « Aller »
 {const pb=document.getElementById('panneauBt'),ve=document.getElementById('verbes'),al=document.getElementById('v-Aller');
  if(pb&&ve&&al){const c=getComputedStyle(al).gridColumnStart;ve.append(pb);pb.classList.add('sousAller');pb.style.gridColumn=(c&&c!=='auto')?c:'5';pb.style.gridRow='2 / span 2'}}
+
+try{DEFV.placardR='Ouvrir'}catch(e){}
 </script>
