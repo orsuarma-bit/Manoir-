@@ -886,16 +886,64 @@ function tvDessine(){if(!TVM.ouvert)return;const c=document.getElementById('gros
    x.font='bold 18px Georgia,serif';x.textAlign='center';x.textBaseline='middle';const ly=421*K;
    x.fillStyle='#e6d2a6';x.fillRect(fx-21,ly-12,42,24);x.strokeStyle='#3a2414';x.lineWidth=2;x.strokeRect(fx-21,ly-12,42,24);
    x.fillStyle='#2a1608';x.fillText(lab,fx,ly+1)}}
+ if(ct>=1&&(!S.circuitOK||CIV.fin))ciDessine(x,K,now);
  if(TVM.etin){const k=(now-TVM.etin.t)/350;if(k>=1)TVM.etin=null;else{const {X,Y}=TVM.etin;x.strokeStyle='rgba(200,230,255,'+(1-k)+')';x.lineWidth=3;
   for(let j=0;j<7;j++){let a=Math.random()*7,px=X*K,py=Y*K;x.beginPath();x.moveTo(px,py);for(let s=0;s<4;s++){px+=Math.cos(a)*14+(Math.random()-.5)*10;py+=Math.sin(a)*14+(Math.random()-.5)*10;x.lineTo(px,py)}x.stroke()}
   x.fillStyle='rgba(220,240,255,'+(.35*(1-k))+')';x.fillRect(0,0,1440,648)}}
  requestAnimationFrame(tvDessine)}
+// ---------- plaque de circuit : tourner les fils pour relier la pile au loquet
+const CI={C:6,L:4,X0:600,Y0:150,T:110};
+function ciRot(m,n){for(let k=0;k<n;k++)m=((m<<1)|(m>>3))&15;return m}
+function ciNouveau(){const {C,L}=CI,r0=Math.floor(Math.random()*L),r1=Math.floor(Math.random()*L);
+ // un chemin au hasard de la pile au loquet
+ let chemin=null;for(let essai=0;essai<200&&!chemin;essai++){const vu=new Set(),p=[[0,r0]];vu.add('0,'+r0);
+  const pas=()=>{const [c,r]=p[p.length-1];if(c===C-1&&r===r1)return true;const d=[[1,0],[0,1],[0,-1],[-1,0]].sort(()=>Math.random()-.5);
+   for(const [dc,dr] of d){const nc=c+dc,nr=r+dr;if(nc<0||nc>=C||nr<0||nr>=L||vu.has(nc+','+nr))continue;vu.add(nc+','+nr);p.push([nc,nr]);if(pas())return true;p.pop()}return false};
+  if(pas()&&p.length>=C+3)chemin=p}
+ if(!chemin){chemin=[];for(let c=0;c<C;c++)chemin.push([c,r0]);for(let r=r0;r!==r1;r+=r1>r0?1:-1)chemin.push([C-1,r+(r1>r0?1:-1)])}
+ const M=Array.from({length:L},()=>Array(C).fill(0)),bit=(dc,dr)=>dc===1?2:dc===-1?8:dr===1?4:1;
+ chemin.forEach(([c,r],i)=>{if(i>0){const [pc,pr]=chemin[i-1];M[r][c]|=bit(pc-c,pr-r)}else M[r][c]|=8;
+  if(i<chemin.length-1){const [nc,nr]=chemin[i+1];M[r][c]|=bit(nc-c,nr-r)}else M[r][c]|=2});
+ const F=[3,6,12,9,5,10,7,11,13,14];for(let r=0;r<L;r++)for(let c=0;c<C;c++)if(!M[r][c])M[r][c]=F[Math.floor(Math.random()*F.length)];
+ const R=Array.from({length:L},()=>Array.from({length:C},()=>Math.floor(Math.random()*4)));
+ S.circ={M,R,r0,r1};if(ciAllume().ok)S.circ.R[r0][0]=(S.circ.R[r0][0]+1)%4}
+function ciMasque(c,r){return ciRot(S.circ.M[r][c],S.circ.R[r][c])}
+function ciAllume(){const {C,L}=CI,{r0,r1}=S.circ,on=new Set();if(!(ciMasque(0,r0)&8))return {on,ok:false};
+ const f=[[0,r0]];on.add('0,'+r0);while(f.length){const [c,r]=f.pop(),m=ciMasque(c,r);
+  for(const [b,dc,dr,o] of [[1,0,-1,4],[2,1,0,8],[4,0,1,1],[8,-1,0,2]]){if(!(m&b))continue;const nc=c+dc,nr=r+dr;if(nc<0||nc>=C||nr<0||nr>=L)continue;
+   if(!(ciMasque(nc,nr)&o)||on.has(nc+','+nr))continue;on.add(nc+','+nr);f.push([nc,nr])}}
+ return {on,ok:on.has((C-1)+','+r1)&&!!(ciMasque(C-1,r1)&2)}}
+const CIV={ang:null,fin:0};
+function ciDessine(x,K,now){const {C,L,X0,Y0,T}=CI;if(!S.circ)return;
+ const al=CIV.fin?Math.max(0,1-(now-CIV.fin-900)/600):1;if(al<=0)return;x.save();x.globalAlpha=al;
+ if(!CIV.ang)CIV.ang=S.circ.R.map(l=>l.map(v=>v*Math.PI/2));
+ const bx=X0*K,by=Y0*K,t=T*K;
+ x.fillStyle='#14281c';x.fillRect(bx-34,by-14,C*t+68,L*t+28);x.strokeStyle='#7a5a2a';x.lineWidth=5;x.strokeRect(bx-34,by-14,C*t+68,L*t+28);
+ x.fillStyle='#c9a24a';[[bx-26,by-6],[bx+C*t+26,by-6],[bx-26,by+L*t+6],[bx+C*t+26,by+L*t+6]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,4,0,7);x.fill()});
+ const {on,ok}=ciAllume(),flux=.6+.4*Math.sin(now/120);
+ for(let r=0;r<L;r++)for(let c=0;c<C;c++){const cx=bx+(c+.5)*t,cy=by+(r+.5)*t;
+  const cible=S.circ.R[r][c]*Math.PI/2;CIV.ang[r][c]+=(cible-CIV.ang[r][c])*.3;
+  x.fillStyle='#1d3a28';x.fillRect(cx-t/2+2,cy-t/2+2,t-4,t-4);x.strokeStyle='#2c5038';x.lineWidth=1;x.strokeRect(cx-t/2+2,cy-t/2+2,t-4,t-4);
+  x.save();x.translate(cx,cy);x.rotate(CIV.ang[r][c]);const m=S.circ.M[r][c],lit=on.has(c+','+r);
+  for(const pass of [0,1]){x.strokeStyle=pass?(lit?'rgba(255,'+Math.floor(200+40*flux)+',90,1)':'#b87333'):'#0a140e';x.lineWidth=pass?9:15;x.lineCap='butt';
+   for(const [b,dx,dy] of [[1,0,-1],[2,1,0],[4,0,1],[8,-1,0]])if(m&b){x.beginPath();x.moveTo(0,0);x.lineTo(dx*t/2,dy*t/2);x.stroke()}}
+  x.fillStyle=lit?'#ffe27a':'#d08a40';x.beginPath();x.arc(0,0,8,0,7);x.fill();x.restore()}
+ // la pile et le loquet
+ const py=by+(S.circ.r0+.5)*t,ly=by+(S.circ.r1+.5)*t;
+ x.fillStyle='#2d2d2d';x.fillRect(bx-30,py-22,24,44);x.fillStyle='#d23a2a';x.fillRect(bx-30,py-22,24,14);x.fillStyle='#e8e0c0';x.font='bold 13px sans-serif';x.textAlign='center';x.fillText('+',bx-18,py-11);
+ x.fillStyle=ok?'#ffe27a':'#8a8a8a';x.fillRect(bx+C*t+6,ly-16,26,32);x.strokeStyle=ok?'#ffe27a':'#8a8a8a';x.lineWidth=5;x.beginPath();x.arc(bx+C*t+19,ly-16,9,Math.PI,0);x.stroke();
+ if(ok){x.fillStyle='rgba(255,230,140,'+(.25*flux)+')';x.fillRect(bx-34,by-14,C*t+68,L*t+28)}
+ x.restore()}
+async function ciClic(X,Y){const {C,L,X0,Y0,T}=CI,c=Math.floor((X-X0)/T),r=Math.floor((Y-Y0)/T);
+ if(c<0||c>=C||r<0||r>=L)return gMsg('Une plaque de circuit cache les fusibles. Il faut relier la pile au loquet.');
+ S.circ.R[r][c]=(S.circ.R[r][c]+1)%4;if(CIV.ang)CIV.ang[r][c]=CIV.ang[r][c]%(2*Math.PI);if(CIV.ang&&S.circ.R[r][c]===0)CIV.ang[r][c]-=2*Math.PI;tvTic(380,.05);
+ if(ciAllume().ok){TVM.occupe=true;S.circuitOK=true;CIV.fin=performance.now();tvTic(600,.2);tvTic(900,.3);gMsg('Le courant passe... CLIC ! Le loquet s\'ouvre.');await pause(1600);TVM.occupe=false;gMsg('La plaque se soulève. Quatre fusibles... Lequel prendre ?')}}
 async function ouvrirTele(){
  if(typeof TESTE!=='undefined'&&TESTE){S.fusiblePris=true;ajoute('fusible');return parle('Un fusible de 10 A. Pareil que celui de la cave.')}
  if(!S.visT)S.visT=[3,3,3,6];if(!S.fusOrd){const o=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}S.fusOrd=o}
- for(let i=0;i<4;i++){TVM.ang[i]=TVM.angV[i]=-(S.visT[i])*Math.PI/3;TVM.chute[i]=0}TVM.capotT=0;TVM.prise=-1;TVM.etin=null;TVM.occupe=false;TVM.ouvert=true;
+ for(let i=0;i<4;i++){TVM.ang[i]=TVM.angV[i]=-(S.visT[i])*Math.PI/3;TVM.chute[i]=0}TVM.capotT=0;TVM.prise=-1;TVM.etin=null;TVM.occupe=false;TVM.ouvert=true;CIV.ang=null;CIV.fin=S.circuitOK?1:0;if(!S.circ)ciNouveau();
  document.getElementById('gros').hidden=false;
- gMsg(S.capot?'Quatre fusibles. Lequel est le bon ?':S.visT.some(v=>v<(v===6?6:3))?'Le dos de la télé. Encore des vis à enlever.':'Le dos de la télé. Le capot est tenu par quatre vis.');
+ gMsg(S.capot?(S.circuitOK?'Quatre fusibles. Lequel est le bon ?':'La plaque de circuit. Il faut relier la pile au loquet.'):S.visT.some(v=>v<(v===6?6:3))?'Le dos de la télé. Encore des vis à enlever.':'Le dos de la télé. Le capot est tenu par quatre vis.');
  requestAnimationFrame(tvDessine)}
 function fermerTele(){TVM.ouvert=false;document.getElementById('gros').hidden=true;document.getElementById('grosT').textContent=''}
 async function tvClic(X,Y){if(TVM.occupe)return;
@@ -904,10 +952,11 @@ async function tvClic(X,Y){if(TVM.occupe)return;
     S.visT[i]--;TVM.ang[i]+=Math.PI/3;tvTic(i===3?260:520,.07);
     if(i===3&&S.visT[i]===5)gMsg('Celle-là est rouillée... Elle force.');
     if(S.visT[i]===0){TVM.chute[i]=performance.now();tvTic(900,.15);
-     if(S.visT.every(v=>v<=0)){TVM.occupe=true;gMsg('La dernière vis tombe...');await pause(800);TVM.capotT=performance.now();S.capot=true;tvTic(140,.4);await pause(800);TVM.occupe=false;gMsg('Le capot est enlevé ! Quatre fusibles... Lequel prendre ?')}
+     if(S.visT.every(v=>v<=0)){TVM.occupe=true;gMsg('La dernière vis tombe...');await pause(800);TVM.capotT=performance.now();S.capot=true;tvTic(140,.4);await pause(800);TVM.occupe=false;gMsg('Le capot est enlevé ! Une plaque de circuit cache les fusibles... Il faut relier la pile au loquet.')}
      else gMsg(['Une vis de moins.','Et de deux.','Plus qu\'une !'][4-S.visT.filter(v=>v>0).length-1]||'Une vis de moins.')}
     return}}
   return gMsg('Le capot est vissé aux quatre coins.')}
+ if(!S.circuitOK)return ciClic(X,Y);
  for(let i=0;i<4;i++)if(Math.abs(X-TVFX[i])<26&&Y>255&&Y<440){
   if(TVLAB[S.fusOrd[i]]!=='10 A'){TVM.etin={t:performance.now(),X:TVFX[i],Y:330};tvTic(1800,.12);tvTic(90,.25);
    return gMsg(['Bzzt ! Aïe ! Pas celui-là.','Aïe ! Ce n\'est pas la bonne taille.','Bzzt ! Il reste du jus là-dedans... Pas celui-là !'][Math.floor(Math.random()*3)])}
