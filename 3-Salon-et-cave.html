@@ -662,6 +662,7 @@ function tvDessine(){if(!TVM.ouvert)return;const c=document.getElementById('gros
    x.save();x.beginPath();x.arc(cx,cy,R+2,0,7);x.clip();if(fO)x.drawImage(fO,cx-R-3,cy-R-3,2*R+6,2*R+6,cx-R-3,cy-R-3,2*R+6,2*R+6);x.restore();
    TVM.angV[i]+=(TVM.ang[i]-TVM.angV[i])*.25;
    let dy=0,al=1;if(S.visT[i]<=0){if(!TVM.chute[i])continue;const k=(now-TVM.chute[i])/600;if(k>=1)continue;dy=k*k*160;al=1-k}
+   if(i===3&&S.visChaud&&S.visT[3]>0){const h=1-(now-S.visChaud)/45000;if(h>0){const gr=x.createRadialGradient(cx,cy,R*.3,cx,cy,R*1.8);gr.addColorStop(0,'rgba(255,90,20,'+(.55*h)+')');gr.addColorStop(1,'rgba(255,90,20,0)');x.fillStyle=gr;x.beginPath();x.arc(cx,cy,R*1.8,0,7);x.fill()}}
    x.save();x.globalAlpha*=al;x.translate(cx,cy+dy);x.rotate(TVM.angV[i]);x.beginPath();x.arc(0,0,R,0,7);x.clip();
    if(fF)x.drawImage(fF,cx-R,cy-R,2*R,2*R,-R,-R,2*R,2*R);x.restore()}
   x.restore()}
@@ -734,8 +735,9 @@ function fermerTele(){TVM.ouvert=false;document.getElementById('gros').hidden=tr
 async function tvClic(X,Y){if(TVM.occupe)return;
  if(X<250||X>1620||Y<0||Y>760)return fermerTele();
  if(!S.capot){for(let i=0;i<4;i++){const [vx,vy]=TVVIS[i];if(Math.hypot(X-vx,Y-vy)<TVR+12){if(S.visT[i]<=0)return;
+    if(i===3&&!(S.visChaud&&performance.now()-S.visChaud<45000)){TVM.rouille=(TVM.rouille||0)+1;tvTic(200,.05);TVM.ang[3]+=.06;setTimeout(()=>TVM.ang[3]-=.06,90);return gMsg(S.visChaud?'Elle a refroidi... Elle est de nouveau bloquée.':TVM.rouille<4?['Elle ne bouge pas d\'un poil. Soudée par la rouille.','Le tournevis glisse. Rien à faire.','Grrr... Toujours bloquée.'][(TVM.rouille-1)%3]:'Mon grand-père chauffait les vis rouillées pour les décoincer...')}
     S.visT[i]--;TVM.ang[i]+=Math.PI/3;tvTic(i===3?260:520,.07);
-    if(i===3&&S.visT[i]===5)gMsg('Celle-là est rouillée... Elle force.');
+    if(i===3&&S.visT[i]===5)gMsg('Elle est encore chaude... Elle tourne !');
     if(S.visT[i]===0){TVM.chute[i]=performance.now();tvTic(900,.15);
      if(S.visT.every(v=>v<=0)){TVM.occupe=true;gMsg('La dernière vis tombe...');await pause(800);TVM.capotT=performance.now();S.capot=true;tvTic(140,.4);await pause(800);TVM.occupe=false;gMsg('Le capot est enlevé ! Une plaque de circuit cache les fusibles... Il faut relier la pile au loquet.')}
      else gMsg(['Une vis de moins.','Et de deux.','Plus qu\'une !'][4-S.visT.filter(v=>v>0).length-1]||'Une vis de moins.')}
@@ -944,6 +946,7 @@ async function action(v,a,b){
 async function actionSalon(v,a,b,k,P){
  // la télé : sa prise a le même fusible que la cave
  if(S.fusibleVu&&!S.fusiblePris&&b&&b.id==='tele'&&a.t==='obj'){
+  if(a.id==='briquet'){if(!S.teleDebr)return parle('Du feu près d\'une télé branchée ? Non merci.');if(S.capot||(S.visT&&S.visT[3]<=0))return parle('Plus besoin de chauffer quoi que ce soit.');S.visChaud=performance.now();return parle('Je chauffe la vis rouillée avec le briquet... Elle fume un peu. Vite, le tournevis, avant qu\'elle refroidisse !')}
   if(a.id!=='tournevis')return parle((a.id==='walkman'?'Le clip du walkman se tord tout de suite. Le capot est vissé.':'Ça ne marchera pas. Le capot est tenu par quatre petites vis.')+(aQui('tournevis')?' Avec le tournevis, ça devrait aller.':''));
   if(!S.teleDebr){await cinema([['tvdos1','Bzzzt !']]);return parle('Pas tant que c\'est branché. Je tiens à mes doigts.')}
   return ouvrirTele()}
