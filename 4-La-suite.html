@@ -1808,7 +1808,7 @@ document.getElementById('ambiance').onclick=e=>{
  s.connect(h).connect(f).connect(gn).connect(SONOUT());s.start();pluieSon=s;inter(e.currentTarget,'Ambiance',1)};
 let pluieGain=null;setInterval(()=>{if(pluieGain)pluieGain.gain.value={perron:.05,cave:.004}[S.salle]??.014},500);
 document.getElementById('musique').onclick=e=>{JK.on=!JK.on;const c=JK.el[JK.a];if(JK.on){if(c.src)c.play().catch(()=>{})}inter(e.currentTarget,'Musique',JK.on)};
-inter(document.getElementById('musique'),'Musique',0);inter(document.getElementById('ambiance'),'Ambiance',0);
+inter(document.getElementById('musique'),'Musique',0);{const go=e=>{removeEventListener('pointerdown',go,true);removeEventListener('keydown',go,true);if(!JK.on&&!JK.manuel&&!(e.target.closest&&e.target.closest('#musique')))document.getElementById('musique').click()};addEventListener('pointerdown',go,true);addEventListener('keydown',go,true);document.getElementById('musique').addEventListener('click',e=>{if(e.isTrusted)JK.manuel=true})}inter(document.getElementById('ambiance'),'Ambiance',0);
 // ---------- Éditeur de zones de marche : un polygone à points déplaçables, enregistré tout de suite (base partagée de la page + ce navigateur)
 const ORIG={};for(const k in SALLES){ORIG[k]=SALLES[k].sol.map(q=>q.slice());majYmin(k)}
 const ED={on:false,hist:[],drag:null,db:null,tap:null,survol:-1},edEl=id=>document.getElementById(id);
