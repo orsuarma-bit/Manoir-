@@ -1143,7 +1143,7 @@ async function ouvrirSalon(){await parle('La petite clé dorée rentre pile... C
 const ENTREES={salon:{hall:[34,132]},hall:{salon:[66,118]},cave:{salon:[256,106]},salonCave:[76,112]};
 async function allerSalle(dest){const de=S.salle,z=Zs().find(z=>['porteSalon','sortieHall','escalierC','bibli'].includes(z.id)&&(dest!=='cave'||z.id==='bibli')&&(dest==='cave'||z.id!=='bibli'));
  const [ex,ey]=z?z.va:[act().x,act().y];S.trans=1;S.sel=null;
- if(!(performance.now()<(S.vite||0)))await Promise.all(S.p.map((q,i)=>marcherVers(ex+(i-1.5)*5,ey,i)));if(performance.now()<(S.vite||0)){S.trans=2}else{FD.cible=1;await pause(420);S.trans=2}
+ if(!(performance.now()<(S.vite||0))){const att=Promise.all(S.p.map((q,i)=>marcherVers(ex+(i-1.5)*5,ey,i)));await new Promise(ok=>{const iv=setInterval(()=>{if(performance.now()<(S.vite||0)){clearInterval(iv);ok()}},40);att.then(()=>{clearInterval(iv);ok()})})}if(performance.now()<(S.vite||0)){S.trans=2}else{FD.cible=1;await pause(420);S.trans=2}
  S.salle=dest;const arr=dest==='salon'&&de==='cave'?ENTREES.salonCave:(ENTREES[dest]||{})[de]||SALLES[dest].coin[0];
  const c=SALLES[dest].coin;let j=0;S.p.forEach((q,i)=>{const [x,y]=i===S.actif?arr:c[j++];q.x=q.tx=x;q.y=q.ty=y;q.dir=x<160?1:-1;q.marche=false;q.vue='P'});placerChien();
  S.trans=0;S.vite=0;FD.cible=0;tourner();majPhrase();await pause(200);
