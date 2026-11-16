@@ -652,10 +652,10 @@ function ouvrirGros(){const p=gPos();GL.cible=p.slice();GL.vis=p.slice();GL.ouve
  gMsg(S.vuAnneaux?'Les quatre anneaux. Il faut trouver la bonne combinaison.':'Quatre anneaux de laiton gravés bloquent le levier. Ils tournent... mais pas tout seuls.');S.vuAnneaux=true;requestAnimationFrame(gDessine)}
 // ---------- gros plan : le canapé (2 coussins à soulever, le sandwich caché au fond)
 const CAK=1440/1870,CACOUS=[{k:'cousV',x:471,y:147,w:440,h:362},{k:'cousR',x:905,y:134,w:482,h:376}];
-const CAN={ouvert:false,t:[0,0],occupe:false};const CASOL=[[240,715,-.35],[1630,720,.4]];
+const CAN={ouvert:false,t:[0,0],occupe:false};const CASOL=[[240,328,0],[1640,322,0]];
 function caSous(X,Y){if(!S.coussins)S.coussins=[false,false];
  for(const i of [1,0]){const q=CACOUS[i];if(!S.coussins[i]&&X>=q.x+20&&X<=q.x+q.w-20&&Y>=q.y+20&&Y<=q.y+q.h-15)return 'c'+i}
- for(const i of [0,1]){const p=CASOL[i];if(S.coussins[i]&&Math.abs(X-p[0])<190&&Math.abs(Y-p[1])<140)return 's'+i}
+ for(const i of [0,1]){const p=CASOL[i];if(S.coussins[i]&&Math.abs(X-p[0])<190&&Math.abs(Y-p[1])<170)return 's'+i}
  if(Math.hypot(X-715,Y-468)<40)return 'piece';if(Math.hypot(X-925,Y-472)<36)return 'bouton';
  if(S.coussins[1]&&!S.sandwich&&X>1235&&X<1395&&Y>430&&Y<510)return 'papier';
  if(X>40&&X<1830&&Y>40&&Y<835)return 'canape';return null}
@@ -664,9 +664,9 @@ const CANOM={c0:'coussin vert',c1:'coussin rouge',s0:'coussin vert',s1:'coussin 
 function caDessine(){if(!CAN.ouvert)return;const c=document.getElementById('grosC'),x=c.getContext('2d'),now=performance.now(),K=CAK;
  x.globalAlpha=1;if(img.canF)x.drawImage(img.canF,0,0,1440,648);
  if(!S.coussins)S.coussins=[false,false];
- CACOUS.forEach((q,i)=>{const im=img[q.k];if(!im)return;let k=0;if(S.coussins[i])k=CAN.t[i]?Math.min(1,(now-CAN.t[i])/900):1;
-  const P0=[q.x+q.w/2,q.y+q.h/2],P1=CASOL[i],e=k<.35?0:((k-.35)/.65)**2,lift=Math.sin(Math.min(1,k/.35)*Math.PI/2)*(1-e),sc=1-.18*e;
-  x.save();x.translate((P0[0]+(P1[0]-P0[0])*e)*K,(P0[1]-120*lift+(P1[1]-P0[1])*e)*K);x.rotate((i?1:-1)*(.12*lift+P1[2]*e));x.drawImage(im,-q.w/2*K*sc,-q.h/2*K*sc,q.w*K*sc,q.h*K*sc);x.restore()});
+ CACOUS.forEach((q,i)=>{const im=img[q.k];if(!im)return;let k=0;if(S.coussins[i])k=CAN.t[i]?Math.min(1,(now-CAN.t[i])/600):1;
+  const P0=[q.x+q.w/2,q.y+q.h/2],P1=CASOL[i],e=1-(1-k)**3;
+  x.save();x.translate((P0[0]+(P1[0]-P0[0])*e)*K,(P0[1]+(P1[1]-P0[1])*e)*K);x.drawImage(im,-q.w/2*K,-q.h/2*K,q.w*K,q.h*K);x.restore()});
  x.globalAlpha=1;requestAnimationFrame(caDessine)}
 function ouvrirCanape(){
  if(typeof TESTE!=='undefined'&&TESTE){S.sandwich=true;ajoute('sandwich');return parle('Je fouille entre les coussins... Beurk ! Un sandwich au thon entamé. Encore tiède.')}
@@ -678,9 +678,9 @@ async function caClic(X,Y){if(CAN.occupe)return;if(!S.coussins)S.coussins=[false
  if(X<40||X>1830||Y<40||Y>835)return fermerCanape();
  for(const i of [1,0]){const q=CACOUS[i];if(S.coussins[i])continue;if(X>=q.x+20&&X<=q.x+q.w-20&&Y>=q.y+20&&Y<=q.y+q.h-15){
    if(reg)return gMsg(i?'Un coussin rouge avec un pompon doré. Tout écrasé.':'Un coussin vert, tout plat. Quelqu\'un s\'est assis dessus pendant des années.');
-   S.coussins[i]=true;CAN.t[i]=performance.now();tvTic(160,.12);setTimeout(()=>tvTic(90,.18),800);
-   return gMsg(i?'Je soulève le coussin rouge... Tiens, un coin de papier dépasse du fond.':'Je soulève le coussin vert... Des miettes, une vieille pièce et un bouton.')}}
- {const z=caSous(X,Y);if(z==='s0'||z==='s1')return gMsg(z==='s1'?'Le coussin rouge, par terre. Il était caché dessous.':'Le coussin vert, par terre.')}
+   S.coussins[i]=true;CAN.t[i]=performance.now();tvTic(160,.12);
+   return gMsg(i?'Je pousse le coussin rouge... Tiens, un coin de papier dépasse du fond.':'Je pousse le coussin vert... Des miettes, une vieille pièce et un bouton.')}}
+ {const z=caSous(X,Y);if(z==='s0'||z==='s1')return gMsg(z==='s1'?'Le coussin rouge, poussé sur le côté.':'Le coussin vert, poussé sur le côté.')}
  if(Math.hypot(X-715,Y-468)<40)return gMsg('Une vieille pièce toute verte. Elle ne vaut plus rien.');
  if(Math.hypot(X-925,Y-472)<36)return gMsg('Un bouton de manteau. Ça ne sert à rien.');
  if(S.coussins[1]&&X>1235&&X<1395&&Y>430&&Y<510){if(S.sandwich)return gMsg('Il n\'y a plus rien, à part des miettes.');
@@ -730,13 +730,13 @@ function ciNouveau(){const {C,L}=CI,r0=Math.floor(Math.random()*L),r1=Math.floor
  let chemin=null;for(let essai=0;essai<200&&!chemin;essai++){const vu=new Set(),p=[[0,r0]];vu.add('0,'+r0);
   const pas=()=>{const [c,r]=p[p.length-1];if(c===C-1&&r===r1)return true;const d=[[1,0],[0,1],[0,-1],[-1,0]].sort(()=>Math.random()-.5);
    for(const [dc,dr] of d){const nc=c+dc,nr=r+dr;if(nc<0||nc>=C||nr<0||nr>=L||vu.has(nc+','+nr))continue;vu.add(nc+','+nr);p.push([nc,nr]);if(pas())return true;p.pop()}return false};
-  if(pas()&&p.length>=C+3)chemin=p}
+  if(pas()&&p.length>=C+8)chemin=p}
  if(!chemin){chemin=[];for(let c=0;c<C;c++)chemin.push([c,r0]);for(let r=r0;r!==r1;r+=r1>r0?1:-1)chemin.push([C-1,r+(r1>r0?1:-1)])}
  const M=Array.from({length:L},()=>Array(C).fill(0)),bit=(dc,dr)=>dc===1?2:dc===-1?8:dr===1?4:1;
  chemin.forEach(([c,r],i)=>{if(i>0){const [pc,pr]=chemin[i-1];M[r][c]|=bit(pc-c,pr-r)}else M[r][c]|=8;
   if(i<chemin.length-1){const [nc,nr]=chemin[i+1];M[r][c]|=bit(nc-c,nr-r)}else M[r][c]|=2});
- const F=[3,6,12,9,5,10,3,6,12,9];for(let r=0;r<L;r++)for(let c=0;c<C;c++)if(!M[r][c])M[r][c]=F[Math.floor(Math.random()*F.length)];
- const R=Array.from({length:L},()=>Array.from({length:C},()=>Math.floor(Math.random()*4)));
+ const F=[3,6,12,9,3,6,12,9,5,10];for(let r=0;r<L;r++)for(let c=0;c<C;c++)if(!M[r][c])M[r][c]=F[Math.floor(Math.random()*F.length)];
+ const R=Array.from({length:L},(_,r)=>Array.from({length:C},(_,c)=>{const m=M[r][c];return m===5||m===10?(Math.random()<.5?1:3):1+Math.floor(Math.random()*3)}));
  S.circ={M,R,r0,r1};if(ciAllume().ok)S.circ.R[r0][0]=(S.circ.R[r0][0]+1)%4}
 function ciMasque(c,r){return ciRot(S.circ.M[r][c],S.circ.R[r][c])}
 function ciAllume(){const {C,L}=CI,{r0,r1}=S.circ,on=new Set();if(!(ciMasque(0,r0)&8))return {on,ok:false};
