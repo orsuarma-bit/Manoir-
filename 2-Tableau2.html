@@ -1548,7 +1548,7 @@ setInterval(()=>{if(ED.on&&ED.hist.length&&ED.hist[ED.hist.length-1].k!==S.salle
   b.onmouseenter=()=>lb.src=A['m_o_'+l[0]+'_a'];b.onmouseleave=()=>lb.src=A['m_o_'+l[0]+'_n'];
   b.onclick=()=>{l[2]();maj();setTimeout(maj,300)};C.append(b)});
  {const tb=document.createElement('button'),li=document.createElement('div');tb.className='otest';tb.type='button';tb.textContent='Mode testeur : choisir une étape';li.id='testListe';li.hidden=true;
-  tb.onclick=()=>{li.hidden=!li.hidden;C.classList.toggle('liste',!li.hidden)};TEST_ETAPES.forEach(([nom],i)=>{const e=document.createElement('button');e.type='button';e.textContent=(i+1)+'. '+nom;e.onclick=()=>{ferme();li.hidden=true;C.classList.remove('liste');allerEtape(i)};li.append(e)});C.append(tb,li)}
+  tb.onclick=()=>{li.hidden=!li.hidden;C.classList.toggle('liste',!li.hidden)};TEST_ETAPES.forEach(([nom],i)=>{const e=document.createElement('button');e.type='button';e.textContent=(i+1)+'. '+nom;e.onclick=()=>{ferme();li.hidden=true;C.classList.remove('liste');allerEtape(i)};li.append(e)});const zb=document.createElement('button');zb.className='otest';zb.type='button';zb.textContent='Éditeur des zones de marche';zb.onclick=()=>{ferme();const z=document.getElementById('zones');if(z)z.click()};C.append(tb,zb,li)}
  pb.onclick=()=>P.hidden?ouvre():ferme();X.onclick=ferme;P.onclick=e=>{if(e.target===P)ferme()};
  ['click','pointerdown','mousedown','touchstart'].forEach(t=>P.addEventListener(t,e=>e.stopPropagation()));
  document.addEventListener('fullscreenchange',maj);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!P.hidden){ferme();e.stopPropagation()}},true)}
