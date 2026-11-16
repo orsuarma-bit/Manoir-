@@ -228,7 +228,7 @@ const PERSOS=[
  {id:'theo',nom:'Teddy',spr:'blond',coul:'#ffe14d',x:34,y:121},
  {id:'karim',nom:'Karim',spr:'brun',coul:'#b9c4ff',x:14,y:140},
  {id:'lina',nom:'Lina',spr:'brune',coul:'#ff8fc8',x:58,y:140}];
-const OBJ={lampeOK:'lampe allumée',walkman:'walkman',blouson:'blouson en cuir',pistache:'Pistache le rat',mouchoir:'mouchoir',pipette:'pipette',pipetteH:'pipette pleine d\'huile',briquet:'briquet',bonbons:'bonbons',chewing:'chewing-gums',chewingM:'chewing-gum mâché',parapluie:'parapluie rouge',baleine:'baleine de parapluie',baleineC:'baleine collante',cleFer:'grosse clé en fer',journal:'journal mouillé',cleSalon:'petite clé dorée',pince:'pince à bûches',cleLaiton:'petite clé en laiton',fusibleG:'fusible grillé',fusible:'fusible 10 A',cleMolette:'clé à molette',tournevis:'tournevis',sandwich:'sandwich au thon',chat:'MistyGris le chat'};
+const OBJ={lampeOK:'lampe allumée',walkman:'walkman',blouson:'blouson en cuir',pistache:'Pistache le rat',mouchoir:'mouchoir',pipette:'pipette',pipetteH:'pipette pleine d\'huile',briquet:'briquet',bonbons:'bonbons',chewing:'chewing-gums',chewingM:'chewing-gum mâché',parapluie:'parapluie rouge',baleine:'baleine de parapluie',baleineC:'baleine collante',cleFer:'grosse clé en fer',journal:'journal mouillé',cleSalon:'petite clé dorée',pince:'pince à bûches',cleLaiton:'petite clé en laiton',fusibleG:'fusible grillé',fusible:'fusible neuf',cleMolette:'clé à molette',tournevis:'tournevis',sandwich:'sandwich au thon',chat:'Grizzmine le chat'};
 const ICONE={lampeOK:'lampe',chewingM:'chewingBoule'};
 // ---------- les deux pièces
 const SALLES={
@@ -678,9 +678,9 @@ const LOOK={
  'o:baleineC':'Une baleine avec un chewing-gum au bout. Une canne à pêche de cambrioleur.','o:cleFer':'Une grosse clé en fer, toute rouillée.',
  'o:journal':'« L\'Écho du Marais ». Gros titre : « COUPURES DE COURANT MYSTÉRIEUSES : LA FOUDRE TOMBE TOUJOURS AU MÊME ENDROIT ».',
  'o:cleSalon':'Une petite clé dorée. Couverte de poussière.','o:pince':'Une pince à bûches. Longue et fine.','o:cleLaiton':'Une petite clé en laiton. Elle sent le poisson en plastique.',
- 'o:fusibleG':'Un vieux fusible, tout noir. Il a fondu. Sur le côté, on lit encore : 10 A.',
- 'o:fusible':'Un fusible de 10 A, comme neuf. Merci la télé.','o:cleMolette':'Une grosse clé à molette. Lourde et rassurante.',
- 'o:sandwich':'Un sandwich au thon entamé. Il sent fort. Très fort.','o:pipette':'Une pipette en verre, avec une poire en caoutchouc rouge. Pour prendre quelques gouttes de quelque chose.','o:pipetteH':'La pipette, pleine d\'huile de lanterne.','o:chat':'MistyGris, un chat noir tout maigre. Il ronronne comme un moteur.','o:pistache':'Pistache, mon rat. Le héros de la soirée.','o:blouson':'Mon blouson en cuir. Pistache dort dans le col.'};
+ 'o:fusibleG':()=>'Un vieux fusible, tout noir. Il a fondu. L\'étiquette est effacée... mais son bouchon est encore '+FUSC[fusCoul()]+'.',
+ 'o:fusible':()=>'Un fusible tout neuf, avec un bouchon '+FUSC[fusCoul()]+'. Comme celui de la cave.','o:cleMolette':'Une grosse clé à molette. Lourde et rassurante.',
+ 'o:sandwich':'Un sandwich au thon entamé. Il sent fort. Très fort.','o:pipette':'Une pipette en verre, avec une poire en caoutchouc rouge. Pour prendre quelques gouttes de quelque chose.','o:pipetteH':'La pipette, pleine d\'huile de lanterne.','o:chat':'Grizzmine, un chat noir tout maigre. Il ronronne comme un moteur.','o:pistache':'Pistache, mon rat. Le héros de la soirée.','o:blouson':'Mon blouson en cuir. Pistache dort dans le col.'};
 const LOOKS={salon:{
  poisson:()=>performance.now()<(S.chante||0)?'Il chante, la bouche grande ouverte.':S.cle?'Le poisson chanteur. Il chante juste, maintenant.':act().id==='lina'?'Il chante faux... Non, attends. Ce n\'est pas lui : quelque chose vibre dans sa gorge. Un petit bout de métal.':'Un poisson en plastique sur une planche, avec un bouton dessous. Quand il chante, c\'est horriblement faux.',
  tableauCh:'Un château sous l\'orage. Le même temps qu\'ici, en fait.',
@@ -793,7 +793,7 @@ async function actionChien(v,a,b){const autre=a.t==='chien'?b:a;
   return parle('Whoopy penche la tête. Il n\'a pas compris.')}
  if(autre.t==='obj'){
   if(autre.id==='sandwich')return parle('Il bave dessus... Non, Whoopy ! C\'est pas pour toi.');
-  if(autre.id==='chat'){await chienAnim('Q',3,1200,120);return parle('Whoopy et MistyGris se reniflent... Ils sont copains !')}
+  if(autre.id==='chat'){await chienAnim('Q',3,1200,120);return parle('Whoopy et Grizzmine se reniflent... Ils sont copains !')}
   if(autre.id==='pistache')return dire(2,'Pas touche à Pistache !');
   await chienAnim('R',4,1200,160);return parle('Il renifle... et éternue.')}
  if(autre.t==='perso'){await chienAnim('Q',3,1100,120);return parle('Il fait la fête à '+S.p[autre.id].nom+'.')}
@@ -911,7 +911,7 @@ async function caClic(X,Y){if(CAN.occupe)return;if(!S.coussins)S.coussins=[false
  document.getElementById('grosX').addEventListener('click',e=>{if(!CAN.ouvert)return;e.stopImmediatePropagation();e.stopPropagation();if(!CAN.occupe)fermerCanape()},true);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CAN.ouvert&&!CAN.occupe){fermerCanape();e.stopPropagation()}},true)}
 // ---------- mini-jeu : derrière la télé (vis puis fusibles)
-const TVK=1440/1870,TVVIS=[[335,63],[1537,63],[335,637],[1537,637]],TVR=34,TVFX=[850,910,968,1028],TVLAB=['5 A','10 A','15 A','20 A'];
+const TVK=1440/1870,TVVIS=[[335,63],[1537,63],[335,637],[1537,637]],TVR=34,TVFX=[850,910,968,1028],TVLAB=['5 A','10 A','15 A','20 A'],FUSC=['rouge','bleu','vert','jaune'];function fusCoul(){if(S.fusCoul==null)S.fusCoul=Math.floor(Math.random()*4);return S.fusCoul}
 const TVM={ouvert:false,ang:[0,0,0,0],angV:[0,0,0,0],chute:[0,0,0,0],capotT:0,prise:-1,priseT:0,etin:null,occupe:false};
 function tvTic(f,d){if(!AC)return;try{const n=AC.currentTime,o=AC.createOscillator(),g2=AC.createGain();o.type='square';o.frequency.setValueAtTime(f,n);o.frequency.exponentialRampToValueAtTime(f*.5,n+d);g2.gain.setValueAtTime(.12,n);g2.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g2).connect(SONOUT());o.start(n);o.stop(n+d+.02)}catch(e){}}
 function tvDessine(){if(!TVM.ouvert)return;const c=document.getElementById('grosC'),x=c.getContext('2d'),now=performance.now(),K=TVK;
@@ -931,7 +931,7 @@ function tvDessine(){if(!TVM.ouvert)return;const c=document.getElementById('gros
     if(fO){x.globalAlpha=1-k;x.drawImage(fO,(TVFX[i]-22)*K,262*K,44*K,140*K,fx-22*K,(262-k*150)*K,44*K,140*K);x.globalAlpha=1}}
    x.font='bold 18px Georgia,serif';x.textAlign='center';x.textBaseline='middle';const ly=421*K;
    x.fillStyle='#e6d2a6';x.fillRect(fx-21,ly-12,42,24);x.strokeStyle='#3a2414';x.lineWidth=2;x.strokeRect(fx-21,ly-12,42,24);
-   x.fillStyle='#2a1608';x.fillText(lab,fx,ly+1)}}
+   x.globalAlpha=.22;x.fillStyle='#2a1608';x.fillText('? A',fx,ly+1);x.globalAlpha=1}}
  if(ct>=1&&(!S.circuitOK||CIV.fin))ciDessine(x,K,now);
  if(TVM.etin){const k=(now-TVM.etin.t)/350;if(k>=1)TVM.etin=null;else{const {X,Y}=TVM.etin;x.strokeStyle='rgba(200,230,255,'+(1-k)+')';x.lineWidth=3;
   for(let j=0;j<7;j++){let a=Math.random()*7,px=X*K,py=Y*K;x.beginPath();x.moveTo(px,py);for(let s=0;s<4;s++){px+=Math.cos(a)*14+(Math.random()-.5)*10;py+=Math.sin(a)*14+(Math.random()-.5)*10;x.lineTo(px,py)}x.stroke()}
@@ -980,7 +980,7 @@ async function ciClic(X,Y){const {C,L,X0,Y0,T}=CI,c=Math.floor((X-X0)/T),r=Math.
  S.circ.R[r][c]=(S.circ.R[r][c]+1)%4;if(CIV.ang)CIV.ang[r][c]=CIV.ang[r][c]%(2*Math.PI);if(CIV.ang&&S.circ.R[r][c]===0)CIV.ang[r][c]-=2*Math.PI;tvTic(380,.05);
  if(ciAllume().ok){TVM.occupe=true;S.circuitOK=true;CIV.fin=performance.now();tvTic(600,.2);tvTic(900,.3);gMsg('Le courant passe... L\'ampoule s\'allume. CLIC !');await pause(1600);TVM.occupe=false;gMsg('La plaque se soulève. Quatre fusibles... Lequel prendre ?')}}
 async function ouvrirTele(vue){
- if(!vue&&typeof TESTE!=='undefined'&&TESTE){S.fusiblePris=true;ajoute('fusible');return parle('Un fusible de 10 A. Pareil que celui de la cave.')}
+ if(!vue&&typeof TESTE!=='undefined'&&TESTE){S.fusiblePris=true;ajoute('fusible');return parle('Un fusible neuf. Pareil que celui de la cave.')}
  if(!S.visT)S.visT=[3,3,3,6];if(!S.fusOrd){const o=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}S.fusOrd=o}
  for(let i=0;i<4;i++){TVM.ang[i]=TVM.angV[i]=-(S.visT[i])*Math.PI/3;TVM.chute[i]=0}TVM.capotT=0;TVM.prise=-1;TVM.etin=null;TVM.occupe=false;TVM.ouvert=true;CIV.ang=null;CIV.fin=S.circuitOK?1:0;if(!S.circ)ciNouveau();
  document.getElementById('gros').hidden=false;
@@ -1011,10 +1011,10 @@ async function tvClic(X,Y){if(TVM.occupe)return;
   return gMsg('Le capot est vissé aux quatre coins.')}
  if(!S.circuitOK)return ciClic(X,Y);
  for(let i=0;i<4;i++)if(Math.abs(X-TVFX[i])<26&&Y>255&&Y<440){
-  if(TVLAB[S.fusOrd[i]]!=='10 A'){TVM.etin={t:performance.now(),X:TVFX[i],Y:330};tvTic(1800,.12);tvTic(90,.25);
-   return gMsg(['Bzzt ! Aïe ! Pas celui-là.','Aïe ! Ce n\'est pas la bonne taille.','Bzzt ! Il reste du jus là-dedans... Pas celui-là !'][Math.floor(Math.random()*3)])}
-  TVM.occupe=true;TVM.prise=i;TVM.priseT=performance.now();tvTic(700,.08);gMsg('Celui-là. 10 A, comme celui de la cave.');await pause(1400);
-  fermerTele();S.fusiblePris=true;ajoute('fusible');return parle('Un fusible de 10 A, tout neuf. Merci le tournevis !')}
+  if(i!==fusCoul()){TVM.etin={t:performance.now(),X:TVFX[i],Y:330};tvTic(1800,.12);tvTic(90,.25);
+   return gMsg(['Bzzt ! Aïe ! Pas celui-là.','Aïe ! Ce n\'est pas le même que celui de la cave.','Bzzt ! Il reste du jus là-dedans... Pas celui-là !'][Math.floor(Math.random()*3)])}
+  TVM.occupe=true;TVM.prise=i;TVM.priseT=performance.now();tvTic(700,.08);gMsg('Celui-là. Bouchon '+FUSC[i]+', comme celui de la cave.');await pause(1400);
+  fermerTele();S.fusiblePris=true;ajoute('fusible');return parle('Un fusible tout neuf, bouchon '+FUSC[i]+'. Merci le tournevis !')}
  gMsg(S.capot?'Des fils, des lampes, des toiles d\'araignée... Les fusibles sont au milieu.':'')}
 {const c=document.getElementById('grosC');
  c.addEventListener('click',e=>{if(!TVM.ouvert)return;e.stopImmediatePropagation();e.stopPropagation();const r=c.getBoundingClientRect();tvClic((e.clientX-r.left)/r.width*1870,(e.clientY-r.top)/r.height*841)},true);
@@ -1195,7 +1195,7 @@ async function igorArrive(){S.igorAnim=performance.now();
 // la télé du salon : fusible, piles, télécommande, puis on zappe
 const CHAINES=[['« ...ILS SONT ENTRÉS DANS LE MANOIR... ILS N\'EN SONT JAMAIS RESSORTIS... Ce soir, 23 h 30 ! »','Une bande-annonce de film d\'horreur. Ouf.'],
  ['« Météo du marais : orage toute la nuit. Une coupure de courant générale est prévue à minuit treize. »','Minuit treize... C\'est noté.'],
- ['« Pizza Luigi ! Livrée même sous l\'orage, même au manoir Mortimer ! »','Il y a eu une pizza livrée ici ce soir. MistyGris sentait la pizza...'],
+ ['« Pizza Luigi ! Livrée même sous l\'orage, même au manoir Mortimer ! »','Il y a eu une pizza livrée ici ce soir. Grizzmine sentait la pizza...'],
  ['« Kssssshhhhhh... »','De la neige. Plus rien.']];
 async function zapper(){if(!S.teleOn){S.teleOn=true;S.teleT=performance.now();await pause(1200)}S.chaine=((S.chaine||0)%4)+1;const [c,l]=CHAINES[S.chaine-1];if(S.chaine===2)S.heure=true;
  await parle('Je zappe...');await dire(-1,c);return parle(l)}
@@ -1206,13 +1206,13 @@ async function finale(){S.fete=0;S.labNoir=true;await pause(700);await dire(0,'I
  await dire(-1,'LE DOCTEUR : « Archibald Mortimer, vétérinaire à la retraite. Pardon pour la frayeur ! On a cru que votre ami était le comédien engagé pour la fête. »');
  await dire(-1,'MADAME MORTIMER : « Le vrai comédien a annulé à cause de l\'orage. Votre ami joue merveilleusement bien le prisonnier ! »');
  await dire(-1,'IGOR : « BOUH ! ... C\'était bien, cette fois ? »');await dire(2,'Très bien. J\'ai failli mourir.');
- await dire(-1,'TITI : « Il est vivant ! Il est vivant ! »');await dire(3,'Et la pizza ?');await dire(-1,'SAM : « En cuisine ! Luigi l\'a livrée tout à l\'heure. MistyGris en a déjà mangé la moitié. »');
+ await dire(-1,'TITI : « Il est vivant ! Il est vivant ! »');await dire(3,'Et la pizza ?');await dire(-1,'SAM : « En cuisine ! Luigi l\'a livrée tout à l\'heure. Grizzmine en a déjà mangé la moitié. »');
  await dire(0,'On a le cric, la roue et les clés. On répare la voiture ?');await dire(-1,'LE DOCTEUR : « Demain ! Ce soir, on fait la fête. »');
  S.fin=true;document.getElementById('fin').hidden=false}
 async function actionSuite(v,a,b){
  const k=a.t==='obj'?'o:'+a.id:a.id,B=b&&b.t!=='obj'?b.id:null,bo=b&&b.t==='obj'?b.id:null,so=a.t==='zone'?(SORTIES[S.salle]||{})[a.id]:null;
  const has=x=>k==='o:'+x||bo===x||(a.t==='obj'&&a.id===x);
- if(S.salle==='cave'&&has('chat')&&(B==='grille'||k==='grille'))return parle('MistyGris est déjà allé voir là-dessous. Sam n\'y est plus : il faut le chercher dans le manoir.');
+ if(S.salle==='cave'&&has('chat')&&(B==='grille'||k==='grille'))return parle('Grizzmine est déjà allé voir là-dessous. Sam n\'y est plus : il faut le chercher dans le manoir.');
  // objets partout
  if(k==='o:lampeOK'&&(v==='Ouvrir'||v==='Secouer')){retire('lampeOK');ajoute('lampe');ajoute('piles');return parle('Je dévisse le bout de la lampe... Deux piles ! La lampe s\'éteint.')}
  if(k==='o:lampe'&&(v==='Allumer'||v==='Utiliser'))return parle('Plus de piles.');
@@ -1564,7 +1564,7 @@ async function actionCave(v,a,b,k,P){
  if(S.salle==='cave'&&k==='placardR'&&(v==='Ouvrir'||v==='Prendre'||v==='Utiliser'||v==='Tirer')){if(S.tournevis)return parle('Il n\'y a plus rien dedans.');S.tournevis=true;ajoute('tournevis');return parle('Je tire la petite trappe... Ça grince. Dedans, un tournevis plat avec un manche rouge !')}
  if(S.salle==='cave'&&k==='placardR'&&v==='Fermer')return parle('Je la laisse comme ça.');
  // la plaque d'égout
- if(S.salle==='cave'&&S.chatPris&&!S.grille&&(k==='grille'||(b&&b.id==='grille'))&&v!=='Regarder')return parle('On l\'a revissée quand MistyGris est revenu. Sam n\'est plus là-dessous : il faut le chercher dans le manoir.');
+ if(S.salle==='cave'&&S.chatPris&&!S.grille&&(k==='grille'||(b&&b.id==='grille'))&&v!=='Regarder')return parle('On l\'a revissée quand Grizzmine est revenu. Sam n\'est plus là-dessous : il faut le chercher dans le manoir.');
  if(k==='grille'&&(v==='Ouvrir'||v==='Tirer'||v==='Prendre'||v==='Pousser'))return parle(S.grille?'Elle est déjà ouverte.':'Elle est vissée. Quatre gros boulons rouillés. Il faudrait un outil.');
  if(v==='Utiliser'&&has('grille')&&b){
   if(has('cleMolette')){if(S.grille)return parle('Elle est déjà ouverte.');S.grille=true;await parle('Je dévisse les quatre boulons... Grrr... Voilà !');await parle('Je soulève la plaque, elle pèse une tonne. Dessous, un tunnel tout petit descend dans le noir.');return dire(1,'Trop petit. Même pour moi, et pourtant je suis petit.')}
@@ -1580,7 +1580,7 @@ async function actionCave(v,a,b,k,P){
   if(v==='Parler')return parle('« Minou, minou... » Il miaule. Il a faim, je crois.');
   if(v==='Pousser'||v==='Tirer'||v==='Secouer')return parle('Il me griffe ! Aïe ! Bon, pas comme ça.')}
  if((v==='Donner'||v==='Utiliser')&&has('chat')&&b&&B==='chat'){
-  if(has('sandwich')){retire('sandwich',aQui('sandwich'));S.chatMange=performance.now();S.chatPris=true;await parle('Tiens, minou... Il saute de l\'étagère et dévore tout le sandwich !');ajoute('chat');await dire(-1,'Rrrrrrr... Rrrrrrr...');return dire(3,'Il ronronne ! On l\'appelle MistyGris. Il vient avec nous.')}
+  if(has('sandwich')){retire('sandwich',aQui('sandwich'));S.chatMange=performance.now();S.chatPris=true;await parle('Tiens, minou... Il saute de l\'étagère et dévore tout le sandwich !');ajoute('chat');await dire(-1,'Rrrrrrr... Rrrrrrr...');return dire(3,'Il ronronne ! On l\'appelle Grizzmine. Il vient avec nous.')}
   if(has('bonbons'))return parle('Il renifle... et détourne la tête. Même les chats n\'aiment pas la réglisse.');
   if(has('pistache'))return dire(2,'Jamais ! Pas Pistache !');
   return parle('Il ne veut pas de ça. Il a faim.')}
@@ -1597,11 +1597,11 @@ async function actionCave(v,a,b,k,P){
 async function allumerCave(){await parle('Clic !');S.noir=false;S.allumeT=performance.now();await pause(600);
  S.p.forEach(q=>{q.pose={k:'Su',debut:performance.now(),fin:performance.now()+900,anim:[['S2',150],['S3',200],['S4',400]]}});
  await dire(-1,'MRAAAOOOU !');await dire(3,'Un chat ! C\'était un chat, là-haut !');return dire(1,'J\'ai failli mourir. Deux fois.')}
-async function finCave(){S.fin=true;retire('chat',aQui('chat'));await parle('Vas-y, MistyGris. Va voir où ça mène.');
+async function finCave(){S.fin=true;retire('chat',aQui('chat'));await parle('Vas-y, Grizzmine. Va voir où ça mène.');
  await dire(-1,'Miaou...');await pause(1500);await dire(-1,'...');await pause(1200);
  await dire(-1,'« ... Un chat ?! Hé ! HÉ ! Il y a quelqu\'un là-haut ? C\'est moi, Sam ! »');
  await dire(0,'SAM ! Il est vivant !');await dire(3,'Il est où ? Sous la maison ?!');await dire(-1,'« Le docteur m\'a enfermé ! Trouvez un autre chemin, le tunnel est trop petit ! »');
- await pause(800);ajoute('chat',aQui('lampeOK')||act().id);await dire(2,'MistyGris est revenu. Il sent la pizza.');document.getElementById('fin').hidden=false}
+ await pause(800);ajoute('chat',aQui('lampeOK')||act().id);await dire(2,'Grizzmine est revenu. Il sent la pizza.');document.getElementById('fin').hidden=false}
 async function passage(){S.passage=true;await parle('Je tire le levier... CLONK !');S.passT=performance.now();FX.flash=.6;
  await pause(1200);await dire(1,'La bibliothèque... elle a tourné !');await dire(2,'Un passage secret. Évidemment.');await dire(3,'Sam, si tu es là-dedans, tu nous dois une pizza.');
  return allerSalle('cave')}
@@ -1872,7 +1872,7 @@ function suiteEtat(){Object.assign(S,{salle:'salon',noir:false,porteOuverte:true
  S.inv={hugo:['lampeOK','mouchoir','pince'],theo:['walkman','bonbons','tournevis'],karim:['blouson','pistache','chat'],lina:['briquet','cleMolette']};
  const c=[[76,114],...SALLES.salon.coin];S.p.forEach((q,i)=>{q.x=q.tx=c[i][0];q.y=q.ty=c[i][1];q.dir=1})}
 function demarrer(){if(DEPART==='suite'){tourner();majVerbes();majPersos();majInv();majPhrase();requestAnimationFrame(boucle);
- setTimeout(async()=>{await dire(0,'Sam est enfermé quelque part sous le manoir.');await dire(3,'« Trouvez un autre chemin », il a dit.');await dire(2,'Et MistyGris qui sent la pizza. Ça ne colle pas.');await dire(1,'On fouille tout le manoir. Pièce par pièce.')},600);return}if(DEPART!=='perron'||/hall/.test(location.hash)){allerAu(DEPART==='perron'?'hall':DEPART);requestAnimationFrame(boucle);return}tourner();majVerbes();majPersos();majInv();majPhrase();requestAnimationFrame(boucle);
+ setTimeout(async()=>{await dire(0,'Sam est enfermé quelque part sous le manoir.');await dire(3,'« Trouvez un autre chemin », il a dit.');await dire(2,'Et Grizzmine qui sent la pizza. Ça ne colle pas.');await dire(1,'On fouille tout le manoir. Pièce par pièce.')},600);return}if(DEPART!=='perron'||/hall/.test(location.hash)){allerAu(DEPART==='perron'?'hall':DEPART);requestAnimationFrame(boucle);return}tourner();majVerbes();majPersos();majInv();majPhrase();requestAnimationFrame(boucle);
  setTimeout(async()=>{await dire(0,'Ouf, la porte du manoir. Sam est forcément là-dedans.');await dire(3,'Il y a forcément une clé cachée quelque part.');await dire(1,'Whoopy ! T\'as sauté de la voiture, toi ?');await dire(-1,'Wouf !');await dire(1,'Bon. Il a du flair, il pourra nous aider.')},600)}
 // accès direct au hall (chapitre 3 : l'aspirateur), dans l'état où on y arrive après le perron
 const DEPART='suite';
@@ -1895,7 +1895,7 @@ for(const [id,k] of [['versSalon','salon'],['versCave','cave']]){const b=documen
  let on=true;regle(on);mb.onclick=()=>{on=!on;regle(on);if(!on&&ED.on)edMode(false)}}
 document.getElementById('reset').onclick=()=>{neuf();tourner();document.getElementById('fin').hidden=true;majVerbes();majPersos();majInv();majPhrase();if(!TESTE)introDepart()};
 // Recommencer : on rejoue aussi l'intro du tableau (pas pendant le mode testeur)
-function introDepart(){if(DEPART==='suite'){setTimeout(async()=>{await dire(0,'Sam est enfermé quelque part sous le manoir.');await dire(3,'« Trouvez un autre chemin », il a dit.');await dire(2,'Et MistyGris qui sent la pizza. Ça ne colle pas.');await dire(1,'On fouille tout le manoir. Pièce par pièce.')},600);return}if(DEPART!=='perron'){allerAu(DEPART);return}setTimeout(async()=>{await dire(0,'Ouf, la porte du manoir. Sam est forcément là-dedans.');await dire(3,'Il y a forcément une clé cachée quelque part.');await dire(1,'Whoopy ! T\'as sauté de la voiture, toi ?');await dire(-1,'Wouf !');await dire(1,'Bon. Il a du flair, il pourra nous aider.')},600)}
+function introDepart(){if(DEPART==='suite'){setTimeout(async()=>{await dire(0,'Sam est enfermé quelque part sous le manoir.');await dire(3,'« Trouvez un autre chemin », il a dit.');await dire(2,'Et Grizzmine qui sent la pizza. Ça ne colle pas.');await dire(1,'On fouille tout le manoir. Pièce par pièce.')},600);return}if(DEPART!=='perron'){allerAu(DEPART);return}setTimeout(async()=>{await dire(0,'Ouf, la porte du manoir. Sam est forcément là-dedans.');await dire(3,'Il y a forcément une clé cachée quelque part.');await dire(1,'Whoopy ! T\'as sauté de la voiture, toi ?');await dire(-1,'Wouf !');await dire(1,'Bon. Il a du flair, il pourra nous aider.')},600)}
 
 const btP=document.getElementById('plein');
 // plein écran : le vrai si le navigateur le permet, sinon (appli mobile, cadre bloqué) un plein écran « maison » qui remplit la fenêtre
