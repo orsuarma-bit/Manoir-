@@ -277,8 +277,8 @@ const SALLES={
   {id:'portrait',nom:'portrait',r:[112,18,126,40],va:[118,112]},
   {id:'portrait',nom:'portrait',r:[172,46,186,64],va:[180,112]},
   {id:'canape',nom:'canapé',r:[92,64,190,100],va:[140,112]},
-  {id:'bouquet',nom:'bouquet',r:[144,70,160,88],va:[152,112]},
-  {id:'table',nom:'table basse',r:[120,88,172,108],va:[146,116]},
+  {id:'bouquet',nom:'bouquet',r:[144,70,160,88],va:[152,112],si:()=>S.verbe==='Regarder'},
+  {id:'table',nom:'table basse',r:[120,95,172,108],va:[146,116]},
   {id:'fenetre',nom:'fenêtre',r:[190,0,252,88],va:[220,112]},
   {id:'pouf',nom:'pouf',r:[192,84,212,98],va:[200,112]},
   {id:'globe',nom:'globe',r:[206,60,226,100],va:[214,112]},
@@ -867,35 +867,46 @@ function ouvrirGros(){const p=gPos();GL.cible=p.slice();GL.vis=p.slice();GL.ouve
  gMsg(S.vuAnneaux?'Les quatre anneaux. Il faut trouver la bonne combinaison.':'Quatre anneaux de laiton gravés bloquent le levier. Ils tournent... mais pas tout seuls.');S.vuAnneaux=true;requestAnimationFrame(gDessine)}
 // ---------- gros plan : le canapé (2 coussins à soulever, le sandwich caché au fond)
 const CAK=1440/1870,CACOUS=[{k:'cousV',x:471,y:147,w:440,h:362},{k:'cousR',x:905,y:134,w:482,h:376}];
-const CAN={ouvert:false,t:[0,0],occupe:false};
+const CAN={ouvert:false,t:[0,0],occupe:false};const CASOL=[[240,715,-.35],[1630,720,.4]];
+function caSous(X,Y){if(!S.coussins)S.coussins=[false,false];
+ for(const i of [1,0]){const q=CACOUS[i];if(!S.coussins[i]&&X>=q.x+20&&X<=q.x+q.w-20&&Y>=q.y+20&&Y<=q.y+q.h-15)return 'c'+i}
+ for(const i of [0,1]){const p=CASOL[i];if(S.coussins[i]&&Math.abs(X-p[0])<190&&Math.abs(Y-p[1])<140)return 's'+i}
+ if(Math.hypot(X-715,Y-468)<40)return 'piece';if(Math.hypot(X-925,Y-472)<36)return 'bouton';
+ if(S.coussins[1]&&!S.sandwich&&X>1235&&X<1395&&Y>430&&Y<510)return 'papier';
+ if(X>40&&X<1830&&Y>40&&Y<835)return 'canape';return null}
+const CANOM={c0:'coussin vert',c1:'coussin rouge',s0:'coussin vert',s1:'coussin rouge',piece:'vieille pièce',bouton:'bouton',papier:'bout de papier',canape:'canapé'};
+
 function caDessine(){if(!CAN.ouvert)return;const c=document.getElementById('grosC'),x=c.getContext('2d'),now=performance.now(),K=CAK;
  x.globalAlpha=1;if(img.canF)x.drawImage(img.canF,0,0,1440,648);
  if(!S.coussins)S.coussins=[false,false];
- CACOUS.forEach((q,i)=>{const im=img[q.k];if(!im)return;let k=0;if(S.coussins[i]){if(!CAN.t[i])return;k=Math.min(1,(now-CAN.t[i])/650);if(k>=1)return}
-  const s=i?1:-1,e=k*k;x.save();x.globalAlpha=1-e;x.translate((q.x+q.w/2+s*520*e)*K,(q.y+q.h/2-230*k+260*e)*K);x.rotate(s*.6*k);x.drawImage(im,-q.w/2*K,-q.h/2*K,q.w*K,q.h*K);x.restore()});
+ CACOUS.forEach((q,i)=>{const im=img[q.k];if(!im)return;let k=0;if(S.coussins[i])k=CAN.t[i]?Math.min(1,(now-CAN.t[i])/900):1;
+  const P0=[q.x+q.w/2,q.y+q.h/2],P1=CASOL[i],e=k<.35?0:((k-.35)/.65)**2,lift=Math.sin(Math.min(1,k/.35)*Math.PI/2)*(1-e),sc=1-.18*e;
+  x.save();x.translate((P0[0]+(P1[0]-P0[0])*e)*K,(P0[1]-120*lift+(P1[1]-P0[1])*e)*K);x.rotate((i?1:-1)*(.12*lift+P1[2]*e));x.drawImage(im,-q.w/2*K*sc,-q.h/2*K*sc,q.w*K*sc,q.h*K*sc);x.restore()});
  x.globalAlpha=1;requestAnimationFrame(caDessine)}
 function ouvrirCanape(){
  if(typeof TESTE!=='undefined'&&TESTE){S.sandwich=true;ajoute('sandwich');return parle('Je fouille entre les coussins... Beurk ! Un sandwich au thon entamé. Encore tiède.')}
  if(!S.coussins)S.coussins=[false,false];CAN.t=[0,0];CAN.occupe=false;CAN.ouvert=true;document.getElementById('gros').hidden=false;
  gMsg(S.coussins[0]&&S.coussins[1]?'Plus de coussins. Il reste des miettes... et ce bout de papier.':'Le canapé. Ces deux coussins cachent peut-être quelque chose.');requestAnimationFrame(caDessine)}
-function fermerCanape(){CAN.ouvert=false;document.getElementById('gros').hidden=true;document.getElementById('grosT').textContent=''}
+function fermerCanape(){CAN.ouvert=false;document.getElementById('grosC').style.cursor='';majPhrase();document.getElementById('gros').hidden=true;document.getElementById('grosT').textContent=''}
 async function caClic(X,Y){if(CAN.occupe)return;if(!S.coussins)S.coussins=[false,false];
  const reg=S.verbe==='Regarder';if(S.sel){S.sel=null;majPhrase()}
  if(X<40||X>1830||Y<40||Y>835)return fermerCanape();
  for(const i of [1,0]){const q=CACOUS[i];if(S.coussins[i])continue;if(X>=q.x+20&&X<=q.x+q.w-20&&Y>=q.y+20&&Y<=q.y+q.h-15){
    if(reg)return gMsg(i?'Un coussin rouge avec un pompon doré. Tout écrasé.':'Un coussin vert, tout plat. Quelqu\'un s\'est assis dessus pendant des années.');
-   S.coussins[i]=true;CAN.t[i]=performance.now();tvTic(160,.12);
+   S.coussins[i]=true;CAN.t[i]=performance.now();tvTic(160,.12);setTimeout(()=>tvTic(90,.18),800);
    return gMsg(i?'Je soulève le coussin rouge... Tiens, un coin de papier dépasse du fond.':'Je soulève le coussin vert... Des miettes, une vieille pièce et un bouton.')}}
+ {const z=caSous(X,Y);if(z==='s0'||z==='s1')return gMsg(z==='s1'?'Le coussin rouge, par terre. Il était caché dessous.':'Le coussin vert, par terre.')}
  if(Math.hypot(X-715,Y-468)<40)return gMsg('Une vieille pièce toute verte. Elle ne vaut plus rien.');
  if(Math.hypot(X-925,Y-472)<36)return gMsg('Un bouton de manteau. Ça ne sert à rien.');
  if(S.coussins[1]&&X>1235&&X<1395&&Y>430&&Y<510){if(S.sandwich)return gMsg('Il n\'y a plus rien, à part des miettes.');
   CAN.occupe=true;gMsg('Je glisse la main au fond...');await pause(700);fermerCanape();CAN.occupe=false;
-  const P=act(),n=performance.now();P.vue='P';
+  const P=act(),n=performance.now();P.marche=false;P.tx=P.x;P.ty=P.y;P.vue='D';P.ordre=null;
   P.pose=img[P.spr+'Fo1']?{k:'Fo1',debut:n,fin:n+2700,anim:[['Fo1',450],['Fo2',550],['Fo3',450],['Fo2',300],['Fo3',450],['Fo4',500]]}:{k:'R1',debut:n,fin:n+2200,anim:[['R1',500],['R2',600],['R1',500],['R2',600]]};
-  S.occupe=true;try{await pause(2300)}finally{S.occupe=false}
+  S.occupe=true;try{await pause(2300)}finally{S.occupe=false}P.tx=P.x;P.ty=P.y;P.marche=false;
   S.sandwich=true;ajoute('sandwich');return parle('Je fouille au fond du canapé... Beurk ! Un sandwich au thon entamé. Encore tiède.')}
  gMsg(S.coussins[0]&&S.coussins[1]?'Des miettes partout. Ce canapé n\'a jamais vu un aspirateur.':'Un vieux canapé tout usé. Et ces coussins...')}
 {const c=document.getElementById('grosC');
+ c.addEventListener('mousemove',e=>{if(!CAN.ouvert)return;const r=c.getBoundingClientRect(),z=caSous((e.clientX-r.left)/r.width*1870,(e.clientY-r.top)/r.height*841);majPhrase(z?CANOM[z]:'');c.style.cursor=z&&z!=='canape'?'pointer':''});
  c.addEventListener('click',e=>{if(!CAN.ouvert)return;e.stopImmediatePropagation();e.stopPropagation();const r=c.getBoundingClientRect();caClic((e.clientX-r.left)/r.width*1870,(e.clientY-r.top)/r.height*841)},true);
  document.getElementById('grosX').addEventListener('click',e=>{if(!CAN.ouvert)return;e.stopImmediatePropagation();e.stopPropagation();if(!CAN.occupe)fermerCanape()},true);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CAN.ouvert&&!CAN.occupe){fermerCanape();e.stopPropagation()}},true)}
