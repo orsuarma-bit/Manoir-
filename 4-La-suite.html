@@ -1491,7 +1491,7 @@ async function actionSalon(v,a,b,k,P){
  return NON}
 const nomLampe=()=>{const q=PERSOS.find(p=>p.id===aQui('lampeOK'));return q?q.nom:'Personne'};
 async function actionCave(v,a,b,k,P){
- const B=b&&b.t!=='obj'?b.id:null,cib=B||(a.t==='zone'?a.id:null);
+ const B=b&&b.t!=='obj'&&b.t!=='perso'?b.id:null,cib=B||(a.t==='zone'?a.id:null);
  if(cib==='escalierC'&&(v==='Aller'||v==='Utiliser'||v==='Ouvrir'))return allerSalle('salon');
  if(cib==='escalierC'&&!b)return NON;
  // dans le noir, seul celui qui tient la lampe y voit quelque chose
@@ -1655,7 +1655,9 @@ function pos(e){const r=cv.getBoundingClientRect();
 function sous(x,y){
  // les petits objets passent avant les persos : on peut toujours les viser, même avec quelqu'un devant
  const dans=z=>{const [a,b,c,d]=z.r;return x>=a&&x<=c&&y>=b&&y<=d},aire=z=>(z.r[2]-z.r[0])*(z.r[3]-z.r[1]);
- for(const z of Zs())if(aire(z)<1500&&dans(z))return {t:'zone',id:z.id};
+ const persoDabord=S.verbe==='Donner'||S.verbe==='Parler';
+ if(!persoDabord)for(const z of Zs())if(aire(z)<1500&&dans(z))return {t:'zone',id:z.id};
+ if(persoDabord)for(let i=S.p.length-1;i>=0;i--){const q=S.p[i];const s=prof(q.y);if(Math.abs(x-q.x)<12*s&&y>q.y-58*s&&y<q.y)return {t:'perso',id:i}}
  if(S.chien){const c=S.chien,s=prof(c.y);if(Math.abs(x-c.x)<15*s&&y>c.y-24*s&&y<c.y+1)return {t:'chien'}}
  for(let i=S.p.length-1;i>=0;i--){const q=S.p[i];const s=prof(q.y);if(Math.abs(x-q.x)<12*s&&y>q.y-58*s&&y<q.y)return {t:'perso',id:i}}
  for(const z of Zs())if(dans(z))return {t:'zone',id:z.id};
