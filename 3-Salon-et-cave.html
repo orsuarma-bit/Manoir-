@@ -837,7 +837,9 @@ const TEST_PAS=[['Prendre',TZ('parapluies')],['Ouvrir',TO('parapluie')],['Utilis
 const TEST_ETAPES=[['Perron : le début',0],['Perron : la grosse clé en fer est trouvée',6],['Hall : on vient d\'entrer',7],['Hall : la petite clé dorée est trouvée',8],
  ['Salon : on vient d\'entrer',9],['Salon : la clé en laiton est trouvée',12],['Salon : clé en laiton en main, globe encore fermé',12,()=>{const i=S.p.findIndex(q=>q.id===aQui('cleLaiton'));if(i>=0){S.actif=i;const q=S.p[i];q.x=q.tx=214;q.y=q.ty=112;q.dir=1}}],['Salon : le globe est ouvert (anneaux à faire)',13],['Salon : anneaux réglés, levier à tirer',13,()=>{S.anneaux=[7,2,2,5];S.vuAnneaux=true}],['Cave : on arrive dans le noir',14],
  ['Cave : le fusible grillé est pris',17],['Salon : tournevis en main, la télé à ouvrir',20],['Salon : le fusible et le sandwich sont pris',24],['Cave : la lumière est revenue',27],['Hall : le code du cadenas est connu',31],
- ['Cave : la caisse à outils est ouverte',34],['Cave : la plaque d\'égout est ouverte',35],['Cave : MistyGris a mangé',36],['La fin',37]];
+ ['Cave : la caisse à outils est ouverte',34],['Cave : la plaque d\'égout est ouverte',35],['Cave : MistyGris a mangé',36],['La fin',37],['Salon : la télé, avec tout en main (tournevis, briquet, pipette d\'huile)',22,()=>{const P=act();
+ for(const o of ['tournevis','briquet','pipetteH']){for(const q of S.p)if(q.id!==P.id)retire(o,q.id);ajoute(o,P.id)}
+ for(const q of S.p)retire('pipette',q.id);S.pipettePrise=true;S.fusibleVu=true;S.teleDebr=true;P.x=P.tx=246;P.y=P.ty=114;P.dir=1}]];
 async function testPas([v,a,b,qui]){
  const objs=[a,b].filter(x=>x&&x.t==='obj').map(x=>x.id),tient=qui||objs[0];
  if(tient){const w=aQui(tient);if(w)S.actif=S.p.findIndex(q=>q.id===w)}
