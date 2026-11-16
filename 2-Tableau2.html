@@ -724,8 +724,8 @@ async function ciClic(X,Y){const {C,L,X0,Y0,T}=CI,c=Math.floor((X-X0)/T),r=Math.
  if(c<0||c>=C||r<0||r>=L)return gMsg('Une plaque de circuit cache les fusibles. Il faut relier la pile au loquet.');
  S.circ.R[r][c]=(S.circ.R[r][c]+1)%4;if(CIV.ang)CIV.ang[r][c]=CIV.ang[r][c]%(2*Math.PI);if(CIV.ang&&S.circ.R[r][c]===0)CIV.ang[r][c]-=2*Math.PI;tvTic(380,.05);
  if(ciAllume().ok){TVM.occupe=true;S.circuitOK=true;CIV.fin=performance.now();tvTic(600,.2);tvTic(900,.3);gMsg('Le courant passe... CLIC ! Le loquet s\'ouvre.');await pause(1600);TVM.occupe=false;gMsg('La plaque se soulève. Quatre fusibles... Lequel prendre ?')}}
-async function ouvrirTele(){
- if(typeof TESTE!=='undefined'&&TESTE){S.fusiblePris=true;ajoute('fusible');return parle('Un fusible de 10 A. Pareil que celui de la cave.')}
+async function ouvrirTele(vue){
+ if(!vue&&typeof TESTE!=='undefined'&&TESTE){S.fusiblePris=true;ajoute('fusible');return parle('Un fusible de 10 A. Pareil que celui de la cave.')}
  if(!S.visT)S.visT=[3,3,3,6];if(!S.fusOrd){const o=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]}S.fusOrd=o}
  for(let i=0;i<4;i++){TVM.ang[i]=TVM.angV[i]=-(S.visT[i])*Math.PI/3;TVM.chute[i]=0}TVM.capotT=0;TVM.prise=-1;TVM.etin=null;TVM.occupe=false;TVM.ouvert=true;CIV.ang=null;CIV.fin=S.circuitOK?1:0;if(!S.circ)ciNouveau();
  document.getElementById('gros').hidden=false;
@@ -735,6 +735,7 @@ function fermerTele(){TVM.ouvert=false;document.getElementById('gros').hidden=tr
 async function tvClic(X,Y){if(TVM.occupe)return;
  if(X<250||X>1620||Y<0||Y>760)return fermerTele();
  if(!S.capot){for(let i=0;i<4;i++){const [vx,vy]=TVVIS[i];if(Math.hypot(X-vx,Y-vy)<TVR+12){if(S.visT[i]<=0)return;
+    if(aQui('tournevis')!==act().id)return gMsg(aQui('tournevis')?'C\'est '+S.p.find(q=>q.id===aQui('tournevis')).nom+' qui a le tournevis.':'Avec les ongles ? Il me faudrait un tournevis.');
     if(i===3&&!(S.visHuile&&S.visChaud&&performance.now()-S.visChaud<45000)){TVM.rouille=(TVM.rouille||0)+1;tvTic(200,.05);TVM.ang[3]+=.06;setTimeout(()=>TVM.ang[3]-=.06,90);return gMsg(S.visChaud&&performance.now()-S.visChaud<45000?'Elle est chaude... mais toujours grippée par la rouille.':S.visChaud&&S.visHuile?'Elle a refroidi... Elle est de nouveau bloquée.':S.visHuile&&TVM.rouille<4?'L\'huile ne suffit pas. Elle est vraiment collée.':TVM.rouille<4?['Elle ne bouge pas d\'un poil. Soudée par la rouille.','Le tournevis glisse. Rien à faire.','Grrr... Toujours bloquée.'][(TVM.rouille-1)%3]:'Mon grand-père disait : « Une vis rouillée, on la graisse et on la chauffe. »')}
     S.visT[i]--;TVM.ang[i]+=Math.PI/3;tvTic(i===3?260:520,.07);
     if(i===3&&S.visT[i]===5)gMsg('Elle est encore chaude... Elle tourne !');
@@ -835,6 +836,7 @@ async function action(v,a,b){
   if(!on&&(k==='lampeG'||k==='lampeV'||k==='lampe'))return parle('Non, on y voit déjà assez mal.');
  }
  if(v==='Regarder'){
+  if(k==='tele'&&S.salle==='salon'&&!b&&S.fusibleVu&&!S.fusiblePris&&S.teleDebr)return ouvrirTele(true);
   if(a.t==='perso'){const q=S.p[a.id];return parle(q.id===P.id?'C\'est moi. Trempé.':q.nom+' a l\'air aussi inquiet que moi.')}
   if(k==='gargouille'&&S.cleGargouille&&invA().includes('lampeOK'))return parle('J\'éclaire la gueule avec la lampe... C\'est une clé ! Coincée tout au fond, entre les dents.');
   if(S.salle==='cave'&&S.noir&&a.t==='zone'&&a.id!=='yeux'&&a.id!=='escalierC'&&aQui('lampeOK')!==P.id)return parle('Je devine une forme... Il fait trop noir. '+nomLampe()+' a la lampe.');
@@ -944,6 +946,7 @@ async function action(v,a,b){
  return parle(REP[v]||'Hein ?');
 }
 async function actionSalon(v,a,b,k,P){
+ if(k==='tele'&&v==='Regarder'&&!b&&S.fusibleVu&&!S.fusiblePris&&S.teleDebr)return ouvrirTele(true);
  // la télé : sa prise a le même fusible que la cave
  if(S.fusibleVu&&!S.fusiblePris&&b&&b.id==='tele'&&a.t==='obj'){
   if(a.id==='pipette')return parle('La pipette est vide.');
