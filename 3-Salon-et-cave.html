@@ -733,8 +733,18 @@ async function ouvrirTele(vue){
  requestAnimationFrame(tvDessine)}
 function fermerTele(){TVM.ouvert=false;document.getElementById('gros').hidden=true;document.getElementById('grosT').textContent=''}
 async function tvClic(X,Y){if(TVM.occupe)return;
+ const surVis=!S.capot&&TVVIS.some(([vx,vy])=>Math.hypot(X-vx,Y-vy)<TVR+12);if(!surVis&&S.sel){S.sel=null;majPhrase()}
  if(X<250||X>1620||Y<0||Y>760)return fermerTele();
- if(!S.capot){for(let i=0;i<4;i++){const [vx,vy]=TVVIS[i];if(Math.hypot(X-vx,Y-vy)<TVR+12){if(S.visT[i]<=0)return;
+ if(!S.capot){for(let i=0;i<4;i++){const [vx,vy]=TVVIS[i];if(Math.hypot(X-vx,Y-vy)<TVR+12){
+    const o=S.verbe==='Utiliser'&&S.sel&&S.sel.t==='obj'?S.sel.id:null;if(o){S.sel=null;S.verbe='Aller';majVerbes();majPhrase()}
+    if(S.verbe==='Regarder'&&!o)return gMsg(i===3?'Une grosse vis toute rouillée.':'Une grosse vis cruciforme.');
+    if(S.visT[i]<=0)return;
+    if(o&&o!=='tournevis'){
+     if(o==='pipetteH'){if(i!==3)return gMsg('Celle-là tourne bien. Pas besoin d\'huile.');S.visHuile=true;const w=aQui('pipetteH');retire('pipetteH',w);ajoute('pipette',w);majInv();tvTic(300,.05);return gMsg('Goutte à goutte, l\'huile coule dans la rouille de la vis.')}
+     if(o==='briquet'){if(i!==3)return gMsg('Pas besoin de la chauffer, celle-là.');S.visChaud=performance.now();tvTic(120,.3);return gMsg('Je chauffe la vis rouillée... Elle fume un peu. Vite, le tournevis !')}
+     if(o==='pipette')return gMsg('La pipette est vide.');
+     if(o==='cleMolette')return gMsg('La clé à molette est trop grosse pour ces vis.');
+     return gMsg('Ça ne sert à rien sur une vis.')}
     if(aQui('tournevis')!==act().id)return gMsg(aQui('tournevis')?'C\'est '+S.p.find(q=>q.id===aQui('tournevis')).nom+' qui a le tournevis.':'Avec les ongles ? Il me faudrait un tournevis.');
     if(i===3&&!(S.visHuile&&S.visChaud&&performance.now()-S.visChaud<45000)){TVM.rouille=(TVM.rouille||0)+1;tvTic(200,.05);TVM.ang[3]+=.06;setTimeout(()=>TVM.ang[3]-=.06,90);return gMsg(S.visChaud&&performance.now()-S.visChaud<45000?'Elle est chaude... mais toujours grippée par la rouille.':S.visChaud&&S.visHuile?'Elle a refroidi... Elle est de nouveau bloquée.':S.visHuile&&TVM.rouille<4?'L\'huile ne suffit pas. Elle est vraiment collée.':TVM.rouille<4?['Elle ne bouge pas d\'un poil. Soudée par la rouille.','Le tournevis glisse. Rien à faire.','Grrr... Toujours bloquée.'][(TVM.rouille-1)%3]:'Mon grand-père disait : « Une vis rouillée, on la graisse et on la chauffe. »')}
     S.visT[i]--;TVM.ang[i]+=Math.PI/3;tvTic(i===3?260:520,.07);
