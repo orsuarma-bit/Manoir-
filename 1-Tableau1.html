@@ -243,7 +243,7 @@ const POS={lampe:[95,118],parapluie:[130,112],couverture:[170,120],bidon:[215,11
  carte:[108,121],walkman:[131,119],lunettes:[158,112],cassette:[185,121],chewing:[207,120],gants:[156,124],ticket:[220,109]};
 const ZV={coffre:[{id:'hayon',nom:'hayon',r:[40,0,280,20]},{id:'roue',nom:'roue de secours',r:[18,70,72,130]},{id:'cric',nom:'cric',r:[72,72,86,120]}],
  gants:[{id:'boite',nom:'boîte à gants',r:[86,84,246,128]},{id:'radio',nom:'autoradio',r:[0,58,70,80]},{id:'levier',nom:'levier de vitesse',r:[10,104,46,144]}]};
-const SORTIE=[0,130,58,144];
+const SORTIE=[262,130,320,144];
 const BETES={chien:{nom:'chien',x:120,y:140,img:'chien1'},chat:{nom:'chat',x:286,y:140,img:'chat1'}};
 // ---------- dialogue
 function dire(i,txt){return new Promise(r=>{S.file.push({i,txt,r});if(S.file.length===1)suivante()})}
@@ -512,7 +512,7 @@ function lanternes(){g.save();g.globalCompositeOperation='lighter';const f=FX.la
 function dessineVue(t){
  if(S.vue==='coffre'){g.drawImage(img.vue_coffre,0,0);for(const o of S.objC){const [x,y]=POS[o];sprite('obj_'+o,x,y)}}
  else {g.drawImage(S.gants?img.vue_gants_ouverte:img.vue_gants_fermee,0,0);if(S.gants)for(const o of S.objG){const [x,y]=POS[o];sprite('obj_'+o,x,y)}}
- const [a,b,c,d]=SORTIE;g.fillStyle='rgba(0,0,0,.75)';g.fillRect(a,b,c-a,d-b);g.fillStyle='#d8ff7a';g.font='11px VT323, monospace';g.textBaseline='middle';g.fillText('< Sortir',a+4,(b+d)/2+1);
+ const [a,b,c,d]=SORTIE;g.fillStyle='rgba(0,0,0,.75)';g.fillRect(a,b,c-a,d-b);g.fillStyle='#d8ff7a';g.font='11px VT323, monospace';g.textBaseline='middle';g.textAlign='right';g.fillText('Sortir >',c-4,(b+d)/2+1);g.textAlign='left';
 }
 function dessine(t){
  if(S.vue){dessineVue(t);if(S.vue==='coffre')pluie(t);eclairage();bulle();return}
