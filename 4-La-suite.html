@@ -868,8 +868,8 @@ function ouvrirGros(){const p=gPos();GL.cible=p.slice();GL.vis=p.slice();GL.ouve
 const FR={ouvert:false,niv:1,occupe:false};
 const FRZ1=[{id:'dedans',nom:'intérieur du frigo',r:[285,85,1080,560]},{id:'aimants',nom:'aimants',r:[380,570,700,760]},{id:'frigo',nom:'frigo',r:[240,40,1100,830]}];
 const FRZ2=[{id:'os',nom:'os',r:[505,560,1165,785]},{id:'fromage',nom:'fromage',r:[430,40,735,305]},{id:'cornichons',nom:'cornichons',r:[945,80,1305,308]},
- {id:'brique',nom:'brique de lait',r:[330,320,510,535]},{id:'sang',nom:'faux sang',r:[580,335,920,535]},{id:'pizza',nom:'boîtes à pizza',r:[945,360,1360,545]},
- {id:'oeufs',nom:'œufs',r:[1595,135,1840,285]},{id:'lait',nom:'bouteille de lait',r:[1595,350,1730,695]},{id:'ketchup',nom:'bouteille de ketchup',r:[1725,415,1850,720]}];
+ {id:'brique',nom:'brique de lait',r:[330,320,510,535]},{id:'sang',nom:'bol rouge',r:[580,335,920,535]},{id:'pizza',nom:'boîtes à pizza',r:[945,360,1360,545]},
+ {id:'oeufs',nom:'œufs',r:[1595,135,1840,285]},{id:'lait',nom:'bouteille de lait',r:[1595,350,1730,695]},{id:'ketchup',nom:'bouteille rouge',r:[1725,415,1850,720]}];
 function frSous(X,Y){for(const z of (FR.niv===2?FRZ2:FRZ1)){if(z.id==='os'&&S.osPris)continue;const [a,b,c,d]=z.r;if(X>=a&&X<=c&&Y>=b&&Y<=d)return z}return null}
 function frDessine(){if(!FR.ouvert)return;const x=document.getElementById('grosC').getContext('2d');const im=img[FR.niv===2?(S.osPris?'fiO':'fiF'):(S.osPris?'frO':'frF')];if(im)x.drawImage(im,0,0,1440,648);requestAnimationFrame(frDessine)}
 function ouvrirFrigo(){
@@ -886,10 +886,10 @@ async function frClic(X,Y){if(FR.occupe)return;const v=S.verbe,z=frSous(X,Y);if(
  const R={fromage:['Un fromage tout vert qui sent les pieds. Même Bouboule n\'en voudrait pas.','Beurk ! Je ne touche pas à ça.'],
   cornichons:['Deux bocaux de cornichons. Rien de magique.','J\'ai pas faim. Pas de cornichons.'],
   pizza:['Deux boîtes à pizza. Vides. Quelqu\'un a déjà tout mangé.','Elles sont vides.'],
-  sang:['Un bol de faux sang. Pour la fête, sûrement.','Je ne vais pas me balader avec un bol de faux sang.'],
+  sang:['Un bol rempli d\'un liquide épais... qui ressemble étrangement à du sang. Brrr.','Hors de question que je touche à ça !'],
   brique:['Une brique de lait. Bien froide.','On n\'a pas le temps de boire du lait.'],
   lait:['Une bouteille de lait.','On n\'a pas le temps de boire du lait.'],
-  ketchup:['Du ketchup... ou encore du faux sang ? Mieux vaut ne pas savoir.','Je laisse ça ici.'],
+  ketchup:['Une bouteille rouge... Ah non, c\'est du Bloody Mary ! Enfin, j\'espère.','C\'est un truc de grands, ça. Je laisse.'],
   oeufs:['Trois œufs. Ils ont l\'air normaux. Enfin, j\'espère.','Ça casse, les œufs. Je les laisse.']};
  if(z.id==='os'){if(v==='Regarder')return gMsg('Un gros os à moelle avec un nœud rouge. Il y a un post-it : « Bouboule ».');
   FR.occupe=true;S.osPris=true;ajoute('os');tvTic(500,.08);gMsg('Un gros os pour Bouboule. Je le prends !');await pause(1300);FR.occupe=false;return}
