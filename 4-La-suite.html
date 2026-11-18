@@ -1873,22 +1873,54 @@ const BORDS={hall:{g:'versBibli',d:'porteSAM'},bibliotheque:{d:'sortHall'},sam:{
 for(const k in BORDS){const s=SALLES[k];if(!s)continue;for(const [cote,id] of Object.entries(BORDS[k])){const z0=s.Z.find(z=>z.id===id);if(!z0)continue;
  const si=id==='bibli'?()=>!!S.passage:z0.si;s.Z.unshift({id,nom:z0.nom,r:cote==='g'?[0,0,9,144]:[311,0,320,144],va:z0.va,...(si?{si}:{})})}}
 // ---------- Igor patrouille avec son aspirateur : s'il croise un enfant, il fait « BOUH ! » (Max n'a pas peur, les autres reculent d'une pièce)
-const IG={salle:null,x:0,dir:1,mode:'',vu:false,der:null,tp:0},IG_SALLES=['hall','sam','office','bibliotheque'];
+const IG={salle:null,x:0,dir:1,mode:'',vu:false,der:null,tp:0,t0:0,pas:0,coeur:0,flash:0,secoue:0,prochain:0},IG_SALLES=['hall','sam','office','bibliotheque'];
+const IG_CHUT=['Chut ! Vous entendez ?','Ces pas... Il arrive !','Quelqu\'un traîne quelque chose dans le couloir...','Oh non. Ce bruit d\'aspirateur...'];
+function igorSon(type,v){try{const ac=aboiAC(),n=ac.currentTime,o=ac.createOscillator(),gg=ac.createGain();
+ if(type==='pas'){o.type='sine';o.frequency.setValueAtTime(70,n);o.frequency.exponentialRampToValueAtTime(32,n+.18);gg.gain.setValueAtTime(.5*v,n);gg.gain.exponentialRampToValueAtTime(.001,n+.22);o.connect(gg).connect(SONOUT());o.start(n);o.stop(n+.25)}
+ else if(type==='coeur'){for(const d of [0,.17]){const o2=ac.createOscillator(),g2=ac.createGain();o2.type='sine';o2.frequency.setValueAtTime(58,n+d);o2.frequency.exponentialRampToValueAtTime(40,n+d+.12);g2.gain.setValueAtTime(.0001,n+d);g2.gain.exponentialRampToValueAtTime(.6*v,n+d+.015);g2.gain.exponentialRampToValueAtTime(.001,n+d+.14);o2.connect(g2).connect(SONOUT());o2.start(n+d);o2.stop(n+d+.16)}}
+ else if(type==='cri'){o.type='sawtooth';o.frequency.setValueAtTime(900,n);o.frequency.exponentialRampToValueAtTime(110,n+.7);gg.gain.setValueAtTime(.35,n);gg.gain.exponentialRampToValueAtTime(.001,n+.8);o.connect(gg).connect(SONOUT());o.start(n);o.stop(n+.85);
+  const b=ac.createBuffer(1,ac.sampleRate*.5,ac.sampleRate),dd=b.getChannelData(0);for(let i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*(1-i/dd.length);const s=ac.createBufferSource(),g3=ac.createGain();s.buffer=b;g3.gain.value=.3;s.connect(g3).connect(SONOUT());s.start(n)}
+ else if(type==='aspi'){o.type='sawtooth';o.frequency.setValueAtTime(95+Math.random()*10,n);gg.gain.setValueAtTime(.05*v,n);gg.gain.linearRampToValueAtTime(.0001,n+.3);o.connect(gg).connect(SONOUT());o.start(n);o.stop(n+.32)}
+}catch(e){}}
+function igorPret(){return !S.fete&&!S.fin&&!S.trans&&!S.vue&&!(typeof TESTE!=='undefined'&&TESTE)&&performance.now()>(IG.calme||0)}
+function igorAlerte(){const n=performance.now();IG.salle=S.salle;IG.mode='alerte';IG.t0=n;IG.dir=Math.random()<.5?1:-1;IG.x=IG.dir>0?-30:350;IG.vu=false;IG.pas=0;IG.coeur=0;
+ const P=act();if(P&&!S.bulle&&!S.occupe)dire(S.actif,IG_CHUT[Math.floor(Math.random()*IG_CHUT.length)])}
 function igorMaj(){const n=performance.now();
- if(IG.der!==S.salle){IG.der=S.salle;IG.salle=null;
-  if(IG_SALLES.includes(S.salle)&&!S.fete&&!S.fin&&n>(IG.calme||0)&&!(typeof TESTE!=='undefined'&&TESTE)&&Math.random()<.45){IG.salle=S.salle;IG.dir=Math.random()<.5?1:-1;IG.x=IG.dir>0?-30:350;IG.mode='aspi';IG.vu=false}}
+ if(IG.der!==S.salle){IG.der=S.salle;IG.salle=null;IG.mode='';IG.prochain=n+30000+Math.random()*30000;
+  if(IG_SALLES.includes(S.salle)&&igorPret()&&Math.random()<.45)setTimeout(()=>{if(IG.der===S.salle&&!IG.salle&&igorPret())igorAlerte()},700+Math.random()*1500)}
+ if(!IG.salle&&IG_SALLES.includes(S.salle)&&n>IG.prochain&&igorPret()&&!S.occupe&&!S.bulle){IG.prochain=n+30000+Math.random()*30000;igorAlerte()}
  if(IG.salle!==S.salle)return;
- const dt=Math.min(50,n-(IG.tp||n));IG.tp=n;
- if(IG.mode==='aspi')IG.x+=IG.dir*dt*.018;else if(IG.mode==='fuite')IG.x+=IG.dir*dt*.09;
- if(IG.x<-60||IG.x>380){IG.salle=null;return}
- const P=act();if(IG.mode==='aspi'&&!IG.vu&&!S.occupe&&!S.bulle&&!S.trans&&P&&Math.abs(P.x-IG.x)<26){IG.vu=true;igorBouh()}}
-function igorDessine(){if(IG.salle!==S.salle)return;const n=performance.now(),y=(SALLES[S.salle].ymin||108)+4;
- const k=IG.mode==='aspi'?'igV'+(1+Math.floor(n/220)%4):IG.mode==='fuite'?'igR'+(1+Math.floor(n/90)%6):IG.mode==='bouh'?'igB':'igS';
- sprite(k,IG.x,y,IG.dir<0,prof(y))}
-async function igorBouh(){const P=act();IG.calme=performance.now()+25000;IG.mode='bouh';IG.dir=P.x>IG.x?1:-1;S.occupe=true;
- try{await dire(-1,'IGOR : « BOUH ! »');
+ const dt=Math.min(50,n-(IG.tp||n));IG.tp=n;const P=act();
+ if(IG.mode==='alerte'){const e=n-IG.t0;if(n>IG.pas){IG.pas=n+Math.max(320,700-e/8);igorSon('pas',Math.min(1,.2+e/3500))}
+  if(e>3600){IG.mode='chasse';IG.t0=n}return}
+ if(IG.mode==='chasse'){const e=n-IG.t0;if(P){IG.dir=P.x>IG.x?1:-1;IG.x+=IG.dir*dt*(e<1500?.02:.032)}
+  if(n>IG.pas){IG.pas=n+300;igorSon('aspi',.8)}
+  const d=P?Math.abs(P.x-IG.x):999;if(n>IG.coeur){IG.coeur=n+Math.max(330,Math.min(1000,d*6));igorSon('coeur',Math.max(.3,1-d/200))}
+  if(e>14000&&!S.occupe&&!S.bulle){IG.mode='fuite';IG.dir=IG.x<160?-1:1;IG.calme=n+25000;dire(-1,'IGOR : « Grmbl... Ces sales gosses courent trop vite. »')}
+  if(!IG.vu&&!S.occupe&&!S.bulle&&!S.trans&&P&&d<20){IG.vu=true;igorBouh()}return}
+ if(IG.mode==='fuite')IG.x+=IG.dir*dt*.09;
+ if(IG.x<-60||IG.x>380){IG.salle=null;IG.mode=''}}
+function igorDessine(){}
+function igorPeint(){if(IG.salle!==S.salle||IG.mode==='alerte'||!IG.mode)return;const n=performance.now(),P=act(),y=Math.max((SALLES[S.salle].ymin||108)+4,P?P.y-1:0);
+ const k=IG.mode==='chasse'?'igV'+(1+Math.floor(n/150)%4):IG.mode==='fuite'?'igR'+(1+Math.floor(n/90)%6):IG.mode==='bouh'?'igB':'igS';
+ sprite(k,IG.x,y,IG.dir<0,prof(y)*1.12)}
+function igorFX(){const n=performance.now();
+ if(IG.salle===S.salle&&(IG.mode==='alerte'||IG.mode==='chasse')){const P=act();let a;
+  g.fillStyle='rgba(0,0,10,'+(IG.mode==='chasse'?.42:Math.min(.42,(n-IG.t0)/3600*.42))+')';g.fillRect(0,0,W,H)}
+ igorPeint();
+ if(IG.salle===S.salle&&(IG.mode==='alerte'||IG.mode==='chasse')){const P=act();let a;
+  if(IG.mode==='alerte'){const e=n-IG.t0;a=Math.min(1,e/3600)*.6;if(Math.random()<.06+e/40000){g.fillStyle='rgba(0,0,0,.55)';g.fillRect(0,0,W,H)}
+   const ox=IG.dir>0?0:W,gr=g.createLinearGradient(ox,0,W/2,0);gr.addColorStop(0,'rgba(0,0,0,'+(.25+e/6000)+')');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,W,H)}
+  else{const d=P?Math.abs(P.x-IG.x):999;a=.45+Math.max(0,1-d/160)*.5}
+  const pu=.75+.25*Math.sin(n/(IG.mode==='chasse'?120:260)),rg=g.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,W*.58);
+  rg.addColorStop(0,'rgba(120,0,0,0)');rg.addColorStop(1,'rgba(150,0,0,'+Math.min(.9,a*pu)+')');g.fillStyle=rg;g.fillRect(0,0,W,H)}
+ if(IG.flash>n){g.fillStyle='rgba(255,255,255,'+((IG.flash-n)/350)+')';g.fillRect(0,0,W,H)}
+ cv.style.transform=IG.secoue>n?'translate('+((Math.random()*2-1)*7)+'px,'+((Math.random()*2-1)*5)+'px)':''}
+async function igorBouh(){const P=act(),n=performance.now();IG.calme=n+25000;IG.mode='bouh';IG.dir=P.x>IG.x?1:-1;S.occupe=true;
+ IG.flash=n+350;IG.secoue=n+600;igorSon('cri');
+ try{await dire(-1,'IGOR : « BOUUUUH ! »');
   if(P.id==='hugo'){await dire(S.actif,'Même pas peur. Faut t\'entraîner, Igor.');await dire(-1,'IGOR : « ... Pas même un tout petit peu ? »');IG.mode='triste';await pause(800);IG.dir=-IG.dir;IG.mode='fuite';return}
-  await dire(S.actif,P.id==='theo'?'AAAAAH ! Un monstre avec un aspirateur !':'Aaah ! On recule, on recule !');IG.mode='aspi';
+  await dire(S.actif,P.id==='theo'?'AAAAAH ! Un monstre avec un aspirateur !':'Aaah ! On recule, on recule !');IG.mode='fuite';IG.dir=-IG.dir;
   const b=(typeof BORDS!=='undefined'&&BORDS[S.salle]||{}).g,so=b&&(SORTIES[S.salle]||{})[b];
   S.occupe=false;if(so&&(!so[1]||so[1]()))await allerSalle(so[0]);
  }finally{S.occupe=false}}
@@ -1912,7 +1944,7 @@ function dessine(t){
  if(S.poussiere>0){const P=act(),s=prof(P.y),k=1-S.poussiere/1600;g.fillStyle='rgba(190,180,160,'+(.75*(1-k))+')';
   for(let i=0;i<9;i++){const an=i*.7+t/400;g.beginPath();g.arc(P.x+Math.cos(an)*(6+k*18),P.y-40*s+Math.sin(an)*(5+k*12),5+k*6,0,7);g.fill()}}
  if(SALLES[S.salle].pluie)pluie(t);
- eclairage();
+ eclairage();igorFX();
  if(FX.flash>0){g.fillStyle='rgba(0,0,0,'+Math.min(1,FX.flash)+')';g.fillRect(0,0,W,H)}
  {const n=performance.now(),d=Math.min(60,n-(FD.t||n));FD.t=n;FD.a=Math.max(0,Math.min(1,FD.a+(FD.cible?1:-1)*d/380));const a=S.trans===2?1:FD.a;if(a>0){g.fillStyle='rgba(0,0,0,'+a+')';g.fillRect(0,0,W,H)}}
  bulle();if(ED.on)edDessine()}
